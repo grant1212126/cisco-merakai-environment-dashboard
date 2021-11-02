@@ -1,0 +1,4 @@
+# Python3 cache
+__pycache__
+# SQLite3 DB (shouldn't be used in prod)
+db.sqlite3
