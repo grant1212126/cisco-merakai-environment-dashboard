@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Organizations</title>
+</head>
+<body>
+    <!-- Organizations -->
+    <table border="1">
+        <tr>
+            <td>Id</td>
+            <td>Name</td>
+            <td>Manage URL</td>
+            <td>API enabled</td>
+            <td>Networks</td>
+            <td>Devices</td>
+        </tr>
+        {% for org in orgs %}
+        <tr>
+            <td>{{ org.id }}</td>
+            <td>{{ org.name }}</td>
+            <td><a href="{{ org.url }}">link</a></td>
+            <td>{{ org.api.enabled }}</td>
+            <td><a href="/{{ org.id }}/networks">link</a></td>
+            <td><a href="/{{ org.id }}/devices">link</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ org.name }} - Devices</title>
+</head>
+<body>
+    <!-- Devices for current org -->
+    <table border="1">
+        <tr>
+            <td>Name</td>
+            <td>Type</td>
+            <td>Model</td>
+            <td>Serial</td>
+            <td>Network ID</td>
+            <td>Lan IP</td>
+            <td>URL</td>
+        </tr>
+        {% for dev in devs %}
+        <tr>
+            <td>{{ dev.name }}</td>
+            <td>{{ dev.productType }}</td>
+            <td>{{ dev.model }}</td>
+            <td>{{ dev.serial }}</td>
+            <td>{{ dev.networkId }}</td>
+            <td>{{ dev.lanIp }}</td>
+            <td><a href="{{ dev.url }}">link</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
