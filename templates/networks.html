@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ org.name }} - Networks</title>
+</head>
+<body>
+    <!-- Devices for current org -->
+    <table border="1">
+        <tr>
+            <td>Id</td>
+            <td>Name</td>
+            <td>Product types</td>
+            <td>Timezone</td>
+            <td>URL</td>
+        </tr>
+        {% for net in nets %}
+        <tr>
+            <td>{{ net.id }}</td>
+            <td>{{ net.name }}</td>
+            <td>{{ net.productTypes|join:", " }}</td>
+            <td>{{ net.timeZone }}</td>
+            <td><a href="{{ net.url }}">link</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

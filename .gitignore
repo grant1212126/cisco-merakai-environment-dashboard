@@ -2,3 +2,5 @@
 __pycache__
 # SQLite3 DB (shouldn't be used in prod)
 db.sqlite3
+# Meraki API logs
+*.log
