@@ -1,3 +1,5 @@
 from django.contrib import admin
+from DashboardApp.models import MerakiDataSource, DataPoint
 
-# Register your models here.
+admin.site.register(MerakiDataSource)
+admin.site.register(DataPoint)
