@@ -8,7 +8,7 @@ import datetime
 
 
 # Cisco API handle
-dashboard = meraki.DashboardAPI(suppress_logging=True)
+dashboard = meraki.DashboardAPI("6bec40cf957de430a6f1f2baa056b99a4fac9ea0",suppress_logging=True)
 
 # List of organizations
 def index(request):
@@ -56,9 +56,7 @@ def visualize_data(request):
                     [data[0] for data in data["occupancy_data"]],
                     [data[1].strftime("%m-%d-%Y %H:%M:%S") for data in data["occupancy_data"]]
                 ],
-
         }
-
         return JsonResponse(data = chart_data, safe = False)
 
     return render(request, "charts.html")
