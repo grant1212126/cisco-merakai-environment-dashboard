@@ -4,7 +4,7 @@ from DashboardApp.models import DataPoint
 import meraki
 
 # Cisco API handle
-dashboard = meraki.DashboardAPI("10a7351614bbbc50e3e2f91a53e15cb58636a6a6", suppress_logging=True)
+dashboard = meraki.DashboardAPI(suppress_logging=True)
 
 # List of organizations
 def index(request):
