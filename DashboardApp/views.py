@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from .models import DataPoint
+from DashboardApp.models import DataPoint
 import meraki
 import datetime
 
@@ -62,4 +63,13 @@ def visualize_data(request):
         return JsonResponse(data = chart_data, safe = False)
 
     return render(request, "charts.html")
+
+
+def data(request, org_id):
+    
+    return render(request, "data.html", {
+        "org": dashboard.organizations.getOrganization(org_id),
+        "devs": dashboard.organizations.getOrganizationDevices(org_id),
+        "data": DataPoint.objects.all(),
+    })
 
