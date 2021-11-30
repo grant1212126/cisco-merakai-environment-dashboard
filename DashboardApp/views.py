@@ -3,7 +3,7 @@ from django.http import HttpResponse
 import meraki
 
 # Cisco API handle
-dashboard = meraki.DashboardAPI()
+dashboard = meraki.DashboardAPI(suppress_logging=True)
 
 # List of organizations
 def index(request):
