@@ -11,7 +11,6 @@ frozenlist==1.2.0
 idna==3.3
 meraki==1.12.0
 multidict==5.2.0
-pkg-resources==0.0.0
 pytz==2021.3
 requests==2.26.0
 schedule==1.1.0

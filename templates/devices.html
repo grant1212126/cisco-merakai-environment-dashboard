@@ -14,6 +14,7 @@
             <td>Network ID</td>
             <td>Lan IP</td>
             <td>URL</td>
+			<td>data</td>
         </tr>
         {% for dev in devs %}
         <tr>
@@ -24,6 +25,7 @@
             <td>{{ dev.networkId }}</td>
             <td>{{ dev.lanIp }}</td>
             <td><a href="{{ dev.url }}">link</a></td>
+			<td><a href="/{{ org.id }}/data">link</a></td>
         </tr>
         {% endfor %}
     </table>
