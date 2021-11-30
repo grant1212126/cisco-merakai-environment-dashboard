@@ -42,20 +42,19 @@ def visualize_data(request):
     }
 
     if request.is_ajax():
-        print("was AJAX")
         chart_data = {
 
                 "humidity_data": [
                     [data[0] for data in data["humidity_data"]],
-                    [data[1].strftime("%m-%d-%Y-%H:%M:%S") for data in data["humidity_data"]]
+                    [data[1].strftime("%m-%d-%Y %H:%M:%S") for data in data["humidity_data"]]
                 ],
                 "temperature_data": [
                     [data[0] for data in data["temperature_data"]],
-                    [data[1].strftime("%m-%d-%Y-%H:%M:%S") for data in data["temperature_data"]]
+                    [data[1].strftime("%m-%d-%Y %H:%M:%S") for data in data["temperature_data"]]
                 ],
                 "occupancy_data": [
                     [data[0] for data in data["occupancy_data"]],
-                    [data[1].strftime("%m-%d-%Y-%H:%M:%S") for data in data["occupancy_data"]]
+                    [data[1].strftime("%m-%d-%Y %H:%M:%S") for data in data["occupancy_data"]]
                 ],
 
         }

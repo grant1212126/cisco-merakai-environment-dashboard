@@ -8,6 +8,7 @@ urlpatterns = [
     path("<int:org_id>/devices", devices, name="devices"),
     path("<int:org_id>/data", data, name="data"),
     path("charts/", visualize_data, name = "charts"),
+]
 
 
 

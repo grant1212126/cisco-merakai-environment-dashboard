@@ -15,10 +15,10 @@
 				<div class = "card-body"> 
 					<canvas id = "ChartHumidity" width="300" height="400">
 					</canvas>
-					<input onchange = "filterData()" type="date" id="startDate">
-					<input onchange = "filterData()" type="time" id="startTime">
-					<input onchange = "filterData()" type="date" id="endDate">
-					<input onchange = "filterData()" type="time" id="endTime">
+					<input onchange = "filterData(humidity_data)" type="date" id="startDate">
+					<input onchange = "filterData(humidity_data)" type="time" id="startTime">
+					<input onchange = "filterData(humidity_data)" type="date" id="endDate">
+					<input onchange = "filterData(humidity_data)" type="time" id="endTime">
 				</div> 
 			</div> 
 		</div>
@@ -28,10 +28,10 @@
 			<div class = "card" style="margin-top:30px"> 
 				<div class = "card-body"> 
 					<canvas id = "ChartTemperature" width="300" height="400"></canvas>
-					<input onchange = "filterData()" type="date" id="startDate">
-					<input onchange = "filterData()" type="time" id="startTime">
-					<input onchange = "filterData()" type="date" id="endDate">
-					<input onchange = "filterData()" type="time" id="endTime">
+					<input onchange = "filterData(temperature_data)" type="date" id="startDate">
+					<input onchange = "filterData(temperature_data)" type="time" id="startTime">
+					<input onchange = "filterData(temperature_data)" type="date" id="endDate">
+					<input onchange = "filterData(temperature_data)" type="time" id="endTime">
 				</div> 
 			</div> 
 		</div>
@@ -40,10 +40,10 @@
 				<div class = "card-body"> 
 					<canvas id = "ChartOccupancy" width="300" height="400">
 					</canvas>
-					<input onchange = "filterData()" type="date" id="startDate">
-					<input onchange = "filterData()" type="time" id="startTime">
-					<input onchange = "filterData()" type="date" id="endDate">
-					<input onchange = "filterData()" type="time" id="endTime">
+					<input onchange = "filterData(occupancy_data)" type="date" id="startDate">
+					<input onchange = "filterData(occupancy_data)" type="time" id="startTime">
+					<input onchange = "filterData(occupancy_data)" type="date" id="endDate">
+					<input onchange = "filterData(occupancy_data)" type="time" id="endTime">
 				</div> 
 			</div> 
 		</div>
@@ -51,20 +51,21 @@
 </div>
 </body>
 <script>
+	var humidity_data;
+	var temperature_data;
+	var occupancy_data;
 	$(document).ready(MakeCharts)
 	function MakeCharts(){
 		$.ajax({
 			url: window.location.pathname,
 			success: function(response){
-				MakeChart(response["humidity_data"][0],
-					response["humidity_data"][1],
-					"ChartHumidity", "Humidity");
-				MakeChart(response["temperature_data"][0],
-					response["temperature_data"][1],
-					"ChartTemperature", "Temperature");
-				MakeChart(response["occupancy_data"][0],
-					response["occupancy_data"][1],
-					"ChartOccupancy", "Occupancy");
+				humidity_data = [response["humidity_data"][0], response["humidity_data"][1]];
+				temperature_data = [response["temperature_data"][0], response["temperature_data"][1]];
+				occupancy_data = [response["occupancy_data"][0], response["occupancy_data"][1]];
+
+				MakeChart(humidity_data[0], humidity_data[1], "ChartHumidity", "Humidity");
+				MakeChart(temperature_data[0], temperature_data[1], "ChartTemperature", "Temperature");
+				MakeChart(occupancy_data[0], occupancy_data[1], "ChartOccupancy", "Occupancy");
 
 			}
 			
@@ -85,11 +86,20 @@
 		});
 	};
 
-	function filterData(){
+	function filterData(data){
+		var dates = [...data[1]];
+
 		const startDate = document.getElementById('startDate');
 		const startTime = document.getElementById('startTime');
 		const endDate = document.getElementById('endDate');
 		const endTime = document.getElementById('endTime');
+
+		const indexStartDate = dates.indexOf(startDate.value);
+		const indexStartTime = dates.indexOf(startTime.value);
+		const indexEndDate = dates.indexOf(endDate.value);
+		const indexEndTime = dates.indexOf(endTime.value);
+
+		
 
 
 	}
