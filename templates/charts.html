@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block content %}
+<body>
+<div class = "col-md-10 col-12 mx-auto" style="margin-top:50px">
+	<div class="row">
+		<div class="col-md-6 col-12">
+			<div class = "card" style="margin-top:30px"> 
+				<div class = "card-body" > 
+					<canvas id = "Chart1" width="300" height="400"></canvas>
+				</div> 
+			</div> 
+		</div>
+		<div class="col-md-6 col-12">
+			<div class = "card" style="margin-top:30px"> 
+				<div class = "card-body"> 
+					<canvas id = "ChartHumidity" width="300" height="400">
+					</canvas>
+					<input onchange = "filterData()" type="date" id="startDate">
+					<input onchange = "filterData()" type="time" id="startTime">
+					<input onchange = "filterData()" type="date" id="endDate">
+					<input onchange = "filterData()" type="time" id="endTime">
+				</div> 
+			</div> 
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6 col-12">
+			<div class = "card" style="margin-top:30px"> 
+				<div class = "card-body"> 
+					<canvas id = "ChartTemperature" width="300" height="400"></canvas>
+					<input onchange = "filterData()" type="date" id="startDate">
+					<input onchange = "filterData()" type="time" id="startTime">
+					<input onchange = "filterData()" type="date" id="endDate">
+					<input onchange = "filterData()" type="time" id="endTime">
+				</div> 
+			</div> 
+		</div>
+		<div class="col-md-6 col-12">
+			<div class = "card" style="margin-top:30px"> 
+				<div class = "card-body"> 
+					<canvas id = "ChartOccupancy" width="300" height="400">
+					</canvas>
+					<input onchange = "filterData()" type="date" id="startDate">
+					<input onchange = "filterData()" type="time" id="startTime">
+					<input onchange = "filterData()" type="date" id="endDate">
+					<input onchange = "filterData()" type="time" id="endTime">
+				</div> 
+			</div> 
+		</div>
+	</div>
+</div>
+</body>
+<script>
+	$(document).ready(MakeCharts)
+	function MakeCharts(){
+		$.ajax({
+			url: window.location.pathname,
+			success: function(response){
+				MakeChart(response["humidity_data"][0],
+					response["humidity_data"][1],
+					"ChartHumidity", "Humidity");
+				MakeChart(response["temperature_data"][0],
+					response["temperature_data"][1],
+					"ChartTemperature", "Temperature");
+				MakeChart(response["occupancy_data"][0],
+					response["occupancy_data"][1],
+					"ChartOccupancy", "Occupancy");
+
+			}
+			
+		});
+	};
+	function MakeChart(values, times, canvasID, chartName){
+		var ctx = document.getElementById(canvasID);
+		var NewChart = new Chart(ctx,{
+			type: 'line',
+			data: {
+				labels: times,
+				datasets: [{
+					label: chartName,
+					data: values,
+				}]
+			},
+
+		});
+	};
+
+	function filterData(){
+		const startDate = document.getElementById('startDate');
+		const startTime = document.getElementById('startTime');
+		const endDate = document.getElementById('endDate');
+		const endTime = document.getElementById('endTime');
+
+
+	}
+
+</script>
+{% endblock content %}
