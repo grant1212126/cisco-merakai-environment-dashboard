@@ -1,13 +1,139 @@
 {% extends 'base.html' %}
-{% block content %}
+{% block content %}</
+<head>
+	<style>
+		body {
+			background-color: #616161;
+			color:  #F7F9F9;
+	}
 
+
+	.card {
+		background-color: #424242;
+
+	}
+
+	</style>
+
+<script>
+	function docWrite(variable) {
+	    document.write(variable);
+	}
+	var h, t, o;
+	var humidity_data;
+	var temperature_data;
+	var occupancy_data;
+	$(document).ready(MakeCharts)
+	function MakeCharts(){
+		$.ajax({
+			url: window.location.pathname,
+			success: function(response){
+				humidity_data = [response["humidity_data"][0], response["humidity_data"][1]];
+				temperature_data = [response["temperature_data"][0], response["temperature_data"][1]];
+				occupancy_data = [response["occupancy_data"][0], response["occupancy_data"][1]];
+
+				h = humidity_data[0][humidity_data.length - 1];
+				t = temperature_data[0][temperature_data.length - 1];
+				o = occupancy_data[0][occupancy_data.length - 1];
+				document.getElementById("h").innerHTML = h.toPrecision(4);
+				document.getElementById("t").innerHTML = t.toPrecision(4);
+				document.getElementById("o").innerHTML = o;
+
+
+				MakeChart(humidity_data[0], humidity_data[1], "ChartHumidity", "Humidity", "#00ffff");
+				MakeChart(temperature_data[0], temperature_data[1], "ChartTemperature", "Temperature", "#FF7F00");
+				MakeChart(occupancy_data[0], occupancy_data[1], "ChartOccupancy", "Occupancy", "#7CFC00");
+
+				
+
+			},
+			complete: function(){
+				setTimeout(MakeCharts, 60000);
+			}
+			
+		});
+	};
+	function MakeChart(values, times, canvasID, chartName, cColor){
+		var ctx = document.getElementById(canvasID);
+		var NewChart = new Chart(ctx,{
+			type: 'line',
+			data: {
+				labels: times,
+				datasets: [{
+					label: chartName,
+					data: values,
+					backgroundColor: cColor,
+					borderColor: cColor,
+					pointRadius: 2.5,
+
+				}]
+			},
+			options: {
+				plugins: {  
+					legend: {
+						labels: {
+							color: "#F7F9F9", 
+							font: {
+								size: 12 
+							}
+						}
+					}
+				},
+				scales: {
+					y: {
+						ticks: {
+							color: "#F7F9F9", 
+
+						}
+					},
+					x: {
+						ticks: {
+							color: "#F7F9F9",
+						}
+					}
+				}
+			}
+
+
+		});
+	};
+
+	function filterData(){
+
+		var humidity_values = [...humidity_data[0]];
+		var temperature_values = [...temperature_data[0]];
+		var occupancy_values = [...occupancy_data[0]];
+
+		var humidity_time = [...humidity_data[1]];
+		var temperature_time = [...temperature_data[1]];
+		var occupancy_time = [...occupancy_data[1]];
+		
+		const startDate = document.getElementById('startDate');
+		const startTime = document.getElementById('startTime');
+		const endDate = document.getElementById('endDate');
+		const endTime = document.getElementById('endTime');
+
+		const indexStartDate = dates.indexOf(startDate.value);
+		const indexStartTime = dates.indexOf(startTime.value);
+		const indexEndDate = dates.indexOf(endDate.value);
+		const indexEndTime = dates.indexOf(endTime.value);
+
+	}
+
+</script>
+</head>
 <body>
 <div class = "col-md-10 col-12 mx-auto" style="margin-top:50px">
 	<div class="row">
 		<div class="col-md-6 col-12">
 			<div class = "card" style="margin-top:30px"> 
 				<div class = "card-body" > 
-					<canvas id = "Chart1" width="300" height="400"></canvas>
+					Latest humidity reading:
+					<p id = "h"><script>docWrite(h)</script></p>
+					Latest temperature reading:
+					<p id = "t"><script>docWrite(t)</script></p>
+					Latest occupancy reading:
+					<p id = "o"><script>docWrite(o)</script></p>
 					<input onchange = "filterData()" type="date" id="startDate">
 					<input onchange = "filterData()" type="time" id="startTime">
 					<input onchange = "filterData()" type="date" id="endDate">
@@ -45,71 +171,5 @@
 	</div>
 </div>
 </body>
-<script>
-	var humidity_data;
-	var temperature_data;
-	var occupancy_data;
-	$(document).ready(MakeCharts)
-	function MakeCharts(){
-		$.ajax({
-			url: window.location.pathname,
-			success: function(response){
-				humidity_data = [response["humidity_data"][0], response["humidity_data"][1]];
-				temperature_data = [response["temperature_data"][0], response["temperature_data"][1]];
-				occupancy_data = [response["occupancy_data"][0], response["occupancy_data"][1]];
 
-				MakeChart(humidity_data[0], humidity_data[1], "ChartHumidity", "Humidity");
-				MakeChart(temperature_data[0], temperature_data[1], "ChartTemperature", "Temperature");
-				MakeChart(occupancy_data[0], occupancy_data[1], "ChartOccupancy", "Occupancy");
-
-			},
-			complete: function(){
-				setTimeout(MakeCharts, 60000);
-			}
-			
-		});
-	};
-	function MakeChart(values, times, canvasID, chartName){
-		var ctx = document.getElementById(canvasID);
-		var NewChart = new Chart(ctx,{
-			type: 'line',
-			data: {
-				labels: times,
-				datasets: [{
-					label: chartName,
-					data: values,
-				}]
-			},
-
-		});
-	};
-
-	function filterData(){
-
-		var humidity_values = [...humidity_data[0]];
-		var temperature_values = [...temperature_data[0]];
-		var occupancy_values = [...occupancy_data[0]];
-
-		var humidity_time = [...humidity_data[1]];
-		var temperature_time = [...temperature_data[1]];
-		var occupancy_time = [...occupancy_data[1]];
-		
-		const startDate = document.getElementById('startDate');
-		const startTime = document.getElementById('startTime');
-		const endDate = document.getElementById('endDate');
-		const endTime = document.getElementById('endTime');
-
-		const indexStartDate = dates.indexOf(startDate.value);
-		const indexStartTime = dates.indexOf(startTime.value);
-		const indexEndDate = dates.indexOf(endDate.value);
-		const indexEndTime = dates.indexOf(endTime.value);
-
-
-
-		
-
-
-	}
-
-</script>
 {% endblock content %}
