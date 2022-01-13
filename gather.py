@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 import copy
 import django
-import meraki
 import os
 import random
 import schedule
 import time
+from lib import meraki
 
 # Load Django project
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Dashboard.settings")
@@ -17,6 +17,11 @@ from DashboardApp.models import MerakiSensor, MerakiDataSource, DataPoint
 # Job dispatcher function for each sensor type
 def disp_temperature(ds):
 	# print(f"Polling temperature from {ds}")
+
+	# Poll temperature
+	rh = meraki.read_sensor(ds.org_id, ds.serial, "temperature")["celsius"]
+
+	# Add DataPoint
 	dp = DataPoint(ds_id=ds,
 				sensor=MerakiSensor.TEMPERATURE,
 				value=20.0 + random.uniform(-2.0, 2.0))
@@ -24,16 +29,26 @@ def disp_temperature(ds):
 
 def disp_humidity(ds):
 	# print(f"Polling humidity from {ds}")
+
+	# Poll humidity
+	rh = meraki.read_sensor(ds.org_id, ds.serial, "humidity")["relativePercentage"]
+
+	# Add DataPoint
 	dp = DataPoint(ds_id=ds,
 				sensor=MerakiSensor.HUMIDITY,
-				value=60.0 + random.uniform(-10.0, 10.0))
+				value=rh)
 	dp.save()
 
 def disp_occupancy(ds):
 	# print(f"Polling occupancy from {ds}")
+
+	# Poll occupancy from device
+	occup = meraki.read_occp(ds.org_id, ds.serial)
+
+	# Add DataPoint to database
 	dp = DataPoint(ds_id=ds,
 				sensor=MerakiSensor.OCCUPANCY,
-				value=1.00 + random.randint(-1, 1))
+				value=occup)
 	dp.save()
 
 dispatchers = {
