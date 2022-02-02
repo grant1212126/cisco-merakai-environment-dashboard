@@ -1,5 +1,5 @@
 #
-# Simple wrappers for the Meraki Dashboard API
+# Meraki Dashboard API wrappers
 #
 
 import os
