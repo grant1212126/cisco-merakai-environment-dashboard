@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block header %}
+<link rel="stylesheet" type="text/css" href="/static/css/settings.css">
+{% endblock header %}
+
+{% block content %}
+
+<h1>Settings</h1>
+
+<div id="nav">
+  <a href="/settings/weather/">Weather</a>
+  <a class="active" href="/settings/locations/">Locations</a>
+  <a href="/settings/sensors/">Sensors</a>
+</div>
+
+<div id="wrap">
+<table>
+  <tr>
+    <td colspan="2">
+      <h3>Add location</h3>
+    </td>
+  </tr>
+
+  <form method="POST">  <!-- Location adder !-->
+    {% csrf_token %}
+    <tr>
+      <td><label for="name">Name</label></td>
+      <td><input type="text" name="name"></td>
+    </tr>
+    <tr>
+      <td><label for="description">Description</label></td>
+      <td><input type="text" name="description"></td>
+    </tr>
+    <tr>
+      <td colspan="2"><input class="submit_button" type="submit" name="add" value="Add"></input></td>
+    </tr>
+  </form>
+
+  <tr>
+    <td colspan="2">
+      <h3>Edit selected location</h3>
+    </td>
+  </tr>
+
+  <form method="POST">  <!-- Location chooser !-->
+    {% csrf_token %}
+    <tr>
+      <td><label for="select">Select</label></td>
+      <td>
+        <select name="select" onchange="this.form.submit();">
+        {% for location in locations %}
+          {% if location.id == selected_location.id %}
+            <option selected value="{{ location.id }}">{{ location.name }}</option>
+          {% else %}
+            <option value="{{ location.id }}">{{ location.name }}</option>
+          {% endif %}
+        {% endfor %}
+        </select>
+      </td>
+    </tr>
+  </form>
+
+  <form method="POST">  <!-- Location editor !-->
+    {% csrf_token %}
+    <input type="hidden" name="id" value="{{ selected_location.id }}">
+    <tr>
+      <td><label for="name">Name</label></td>
+      <td><input type="text" name="name" value="{{ selected_location.name }}"></td>
+    </tr>
+    <tr>
+      <td><label for="description">Description</label></td>
+      <td><input type="text" name="description" value="{{ selected_location.description }}"></td>
+    </tr>
+    <tr>
+      <td colspan="2"><input class="submit_button" type="submit" name="edit" value="Edit"></input></td>
+    </tr>
+    <tr>
+      <td colspan="2"><input class="submit_button" type="submit" name="delete" value="Delete"></input></td>
+    </tr>
+  </form>
+</table>
+</div>
+
+{% endblock content %}

@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block header %}
+<link rel="stylesheet" type="text/css" href="/static/css/settings.css">
+{% endblock header %}
+
+{% block content %}
+
+<h1>Settings</h1>
+
+<div id="nav">
+  <a href="/settings/weather/">Weather</a>
+  <a href="/settings/locations/">Locations</a>
+  <a class="active" href="/settings/sensors/">Sensors</a>
+</div>
+
+<div id="wrap">
+<table>
+  <tr>
+    <td colspan="2"><h3>Add sensors</h3></td>
+  </tr>
+  <form method="POST">
+    {% csrf_token %}
+    <tr>
+      <td>Meraki device</td>
+      <td>
+        <select name="meraki_dev_idx">
+          {% for dev in meraki_devices %}
+            <option value="{{ dev.idx }}">{{ dev.kind }} - {{ dev.serial }} - {{ dev.name }}</option>
+          {% endfor %}
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2"><input class="submit_button" type="submit" name="add" value="Add"></td>
+    </tr>
+  </form>
+
+  <tr>
+    <td colspan="2"><h3>Edit selected sensor</h3></td>
+  </tr>
+
+  <!-- Sensor chooser !-->
+  <form method="POST">
+    {% csrf_token %}
+    <tr>
+      <td>Select</td>
+      <td>
+        <select name="select" onchange="this.form.submit();">
+        {% for sensor in sensors %}
+          {% if sensor.id == selected_sensor.id %}
+            <option selected value="{{ sensor.id }}">{{ sensor.serial }} - {{ sensor.description }}</option>
+          {% else %}
+            <option value="{{ sensor.id }}">{{ sensor.serial }} - {{ sensor.description }}</option>
+          {% endif %}
+        {% endfor %}
+        </select>
+      </td>
+    </tr>
+  </form>
+
+  <!-- Sensor editor !-->
+  <form method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="id" value="{{ selected_sensor.id }}">
+    <!-- Read-only paremeters just for reference !-->
+    <tr>
+      <td><label for="org_id">Meraki Organization</label></td>
+      <td><input type="text" name="org_id" value="{{ selected_sensor.org_id }}" disabled></td>
+    </tr>
+    <tr>
+      <td><label for="serial">Serial number</label></td>
+      <td><input type="text" name="serial" value="{{ selected_sensor.serial }}" disabled></td>
+    </tr>
+    <tr>
+      <td><label for="kind">Device kind</label></td>
+      <td><input type="text" name="kind" value="{{ selected_sensor.kind }}" disabled></td>
+    </tr>
+    <!-- User configurable options !-->
+    <tr>
+      <td><label for="location">Location</label></td>
+      <td>
+        <select name="location">
+          <option value="null">(N/A)</option>
+        {% for location in locations %}
+          {% if location.id == selected_sensor.location %}
+            <option selected value="{{ location.id }}">{{ location.name }}</option>
+          {% else %}
+            <option value="{{ location.id }}">{{ location.name }}</option>
+          {% endif %}
+        {% endfor %}
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td><label for="description">Description</label></td>
+      <td><input type="text" name="description" value="{{ selected_sensor.description }}"></td>
+    </tr>
+    <tr>
+      <td><label for="interval">Polling interval(s)</label></td>
+      <td><input type="text" name="interval" value="{{ selected_sensor.interval }}"></td>
+    </tr>
+    <tr>
+      <td colspan="2"><input class="submit_button" type="submit" name="edit" value="Edit"></td>
+    </tr>
+    <tr>
+      <td colspan="2"><input class="submit_button" type="submit" name="delete" value="Delete"></td>
+    </tr>
+  </form>
+</table>
+</div>
+
+{% endblock content %}

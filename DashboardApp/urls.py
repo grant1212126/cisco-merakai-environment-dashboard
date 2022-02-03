@@ -1,7 +1,11 @@
 from django.urls import path
-from .views import add_device, visualize_data
+from DashboardApp.views import visualize_data, \
+    settings_weather, settings_locations, settings_sensors
 
 urlpatterns = [
     path("", visualize_data, name="charts"),
-    path("add_device/", add_device, name="add_device"),
+
+    path("settings/weather/", settings_weather),
+    path("settings/locations/", settings_locations),
+    path("settings/sensors/", settings_sensors),
 ]

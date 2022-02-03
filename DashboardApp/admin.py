@@ -1,5 +1,6 @@
 from django.contrib import admin
-from DashboardApp.models import MerakiDataSource, DataPoint
+from DashboardApp.models import Location, Sensor, DataPoint
 
-admin.site.register(MerakiDataSource)
+admin.site.register(Location)
+admin.site.register(Sensor)
 admin.site.register(DataPoint)
