@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block header %}
+<link rel="stylesheet" type="text/css" href="/static/css/settings.css">
+{% endblock header %}
+
+{% block content %}
+
+<h1>Settings</h1>
+
+<div id="nav">
+  <a class="active" href="/settings/weather/">Weather</a>
+  <a href="/settings/locations/">Locations</a>
+  <a href="/settings/sensors/">Sensors</a>
+</div>
+
+<div id="wrap">
+<table>
+  <tr>
+    <td colspan="2"><h3>Find city</h3></td>
+  </tr>
+
+  <form method="POST">
+    {% csrf_token %}
+    <tr>
+      <td><label for="city">City</label></td>
+      <td>
+        <input type="text" name="city"></select>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2">
+        <input class="submit_button" type="submit" name="search" value="Search"></input>
+      </td>
+    </tr>
+  </form>
+
+  <tr>
+    <td colspan="2"><h3>Edit options</h3></td>
+  </tr>
+
+  <form method="POST">
+    {% csrf_token %}
+    <tr>
+      <td><label for="description">Location</label></td>
+      <td>
+        <input type="text" name="description" value="{{ description }}"></select>
+      </td>
+    </tr>
+    <tr>
+      <td><label for="lat">Latitude</label></td>
+      <td>
+        <input type="text" name="lat" value="{{ lat }}"></select>
+      </td>
+    </tr>
+    <tr>
+      <td><label for="lon">Longitude</label></td>
+      <td>
+        <input type="text" name="lon" value="{{ lon }}"></select>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2">
+        <input class="submit_button" type="submit" name="edit" value="Edit"></input>
+      </td>
+    </tr>
+  </form>
+</table>
+</div>
+
+{% endblock content %}
