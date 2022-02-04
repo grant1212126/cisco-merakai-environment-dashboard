@@ -8,8 +8,6 @@
 
 
 {% block content %}
-
-<a href="/settings/weather/" style="color:white;font-size: 20px;">Settings</a>
 {{ form.media }}
 <div class = "col-md-10 col-12 mx-auto" style="margin-top:50px">
 	<div class="row">
@@ -51,6 +49,26 @@
 
 					    <button onclick="MakeCharts()">Filter</button>
 					</div>
+
+<!-- 					<script type="text/javascript">
+
+						$(function () {
+					        $('#dateTimeFrom').datetimepicker({
+					        	useCurrent: false,
+					        });
+					        $('#dateTimeTo').datetimepicker({
+					            useCurrent: false
+					        });
+					        $("#dateTimeFrom").on("change.datetimepicker", function (e) {
+					            $('#dateTimeTo').datetimepicker('minDate', e.date);
+					            console.log(e.date._d);
+					            console.log(moment(e.date._d).format('MM-DD-YYYY H:mm:ss'));
+					        });
+					        $("#dateTimeTo").on("change.datetimepicker", function (e) {
+					            $('#dateTimeFrom').datetimepicker('maxDate', e.date);
+					        });
+					    });
+					</script> -->
 				</div>
 			</div>
 		</div>

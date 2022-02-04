@@ -1,78 +1,54 @@
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
-class WeatherOptions(models.Model):
-    """Weather API parameter configuration, for now this is global
-    """
+class MerakiSensor(models.TextChoices):
+	"""Monitorable Meraki sensors
+	"""
+	TEMPERATURE = "TM", _("Temperature")
+	HUMIDITY    = "HD", _("Humidity")
+	OCCUPANCY   = "OC", _("Occupancy")
 
-    # Geographical coordinates for the location
-    lat = models.FloatField()
-    lon = models.FloatField()
+class MerakiDataSource(models.Model):
+	"""Represents a sensor on a Meraki device that we monitor, for now its either:
+		1. MT10 temperature sensor
+		2. MT10 humidity sensor
+		3. MV12WE occupancy data
+	"""
 
-    # User friendly description of the location
-    description = models.TextField(blank=True)
+	# Unique identifier of this data source
+	id = models.AutoField(unique=True, primary_key=True)
 
-class Location(models.Model):
-    """Represents a grouping of sensors
-    """
+	# Organization ID the device belongs to
+	org_id = models.CharField(max_length=64)
 
-    # Name of the location
-    name = models.CharField(max_length=64, unique=True)
-    # User friendly description
-    description = models.TextField(blank=True)
+	# Serial number of device monitored by the data source
+	serial = models.CharField(max_length=64)
 
-class Sensor(models.Model):
-    """Represents a Meraki sensor
-    """
+	# Sensor on device monitored by the data source
+	sensor = models.CharField(max_length=2, choices=MerakiSensor.choices)
 
-    class Kind(models.TextChoices):
-        """Kind of sensors
-        """
-        CAM = "Camera"          # E.g. MV12WE camera
-        ENV = "Environmental"   # E.g. MT10 environmental sensor
+	# Polling interval (in seconds)
+	interval = models.IntegerField()
 
-    # Org ID and Serial required for accessing the device
-    # These *must* be unique together, this prevents duplicate sensors
-    org_id = models.CharField(max_length=64)
-    serial = models.CharField(max_length=64)
+	# User friendly description
+	description = models.TextField(blank=True)
 
-    # Kind of sensor (this must always match the device type reported by
-    # the Cisco API, we save it to make it easier to determine what API
-    # to call for gathering data)
-    kind = models.CharField(max_length=13, choices=Kind.choices)
-
-    # Location the device is installed at
-    location = models.ForeignKey(Location, on_delete=models.CASCADE, null=True)
-
-    # User friendly description
-    description = models.TextField(blank=True)
-
-    # Polling interval (in seconds)
-    interval = models.IntegerField()
-
-    class Meta:
-        unique_together = (("org_id", "serial"),)
+	def __str__(self):
+		return f"{self.id}({self.serial}: {self.description})"
 
 class DataPoint(models.Model):
-    """Represents a data point collected by the data gathering daemon
-    """
+	"""Represents a data point collected by the data gathering daemon
+	"""
 
-    class Kind(models.TextChoices):
-        """Kinds of data points
-        """
-        TM  = "Temperature"
-        HD  = "Humidity"
-        OC  = "Occupancy"
+	# Source the data was collected from
+	ds_id = models.ForeignKey(MerakiDataSource, on_delete=models.CASCADE)
 
-    # Location the data was collected from
-    location = models.ForeignKey(Location, on_delete=models.CASCADE, null=True)
-    # Sensor the data was collected from
-    sensor = models.ForeignKey(Sensor, on_delete=models.CASCADE)
+	# Type of sensor the data orginated from
+	sensor = models.CharField(max_length=2, choices=MerakiSensor.choices)
 
-    # Kind of data point
-    kind = models.CharField(max_length=11, choices=Kind.choices)
+	# Timestamp the data was collected at
+	tstamp = models.DateTimeField(auto_now_add=True)
 
-    # Timestamp the data was collected at
-    tstamp = models.DateTimeField(auto_now_add=True)
-
-    # Value of the data point
-    value = models.FloatField()
+	# Value of the data point
+	# NOTE: we might need non-float data later on
+	value = models.FloatField()
