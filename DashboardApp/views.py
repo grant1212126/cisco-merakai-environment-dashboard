@@ -9,6 +9,7 @@ from lib import meraki, weather
 
 import datetime
 import json
+from .forms import DateTimeForm
 
 def settings_weather(request):
     context = {}
@@ -143,6 +144,10 @@ def settings_sensors(request):
 
 # Feeds data to index.html
 def visualize_data(request):
+
+
+
+
     data = {
         "humidity_data": DataPoint.objects.filter(
             kind = DataPoint.Kind.HD).values_list("value", "tstamp"),
@@ -150,6 +155,10 @@ def visualize_data(request):
             kind = DataPoint.Kind.TM).values_list("value", "tstamp"),
         "occupancy_data": DataPoint.objects.filter(
             kind = DataPoint.Kind.OC).values_list("value", "tstamp"),
+    }
+
+    context = {
+        'form': DateTimeForm(request.POST or None),
     }
 
     # Dictionaries structured in a Chart JS compatible way
@@ -203,4 +212,7 @@ def visualize_data(request):
         
         return JsonResponse(data=chart_data, safe=False)
 
-    return render(request, "index.html")
+    return render(request, "index.html", context)
+
+
+

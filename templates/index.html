@@ -6,8 +6,11 @@
 <script src = "{% static 'js/charts.js' %}"></script>
 {% endblock header %}
 
+
 {% block content %}
+
 <a href="/settings/weather/" style="color:white;font-size: 20px;">Settings</a>
+{{ form.media }}
 <div class = "col-md-10 col-12 mx-auto" style="margin-top:50px">
 	<div class="row">
 		<div class="col-md-6 col-12">
@@ -19,10 +22,35 @@
 					<p id = "t"><script>docWrite(t)</script></p>
 					Latest occupancy reading:
 					<p id = "o"><script>docWrite(o)</script></p>
-					<!-- <input onchange = "filterData()" type="date" id="startDate">
-					<input onchange = "filterData()" type="time" id="startTime">
-					<input onchange = "filterData()" type="date" id="endDate">
-					<input onchange = "filterData()" type="time" id="endTime"> -->
+
+					<div class="container">
+					    <div class='col-md-5'>
+					        <div class="form-group">
+					           <div class="input-group date" id="dateTimeFrom" data-target-input="nearest">
+					                <input type="text" class="form-control datetimepicker-input" data-target="#dateTimeFrom"/>
+					                <div class="input-group-append" data-target="#dateTimeFrom" data-toggle="datetimepicker">
+					                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+					                </div>
+					            </div>
+					        </div>
+					    </div>
+					    <div class='col-md-5'>
+					        <div class="form-group">
+					           <div class="input-group date" id="dateTimeTo" data-target-input="nearest">
+					                <input type="text" class="form-control datetimepicker-input" data-target="#dateTimeTo"/>
+					                <div class="input-group-append" data-target="#dateTimeTo" data-toggle="datetimepicker">
+					                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+					                </div>
+					            </div>
+					        </div>
+					    </div>
+
+					   <!--  <form action="" method="post">
+    						<button onclick="filterHumidity()" name="Filter" value="filter">Filter</button>
+						</form> -->
+
+					    <button onclick="MakeCharts()">Filter</button>
+					</div>
 				</div>
 			</div>
 		</div>

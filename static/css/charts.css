@@ -3,7 +3,14 @@ body {
 	color:  #F7F9F9;
 }
 
-
 .card {
 	background-color: #424242;
 }
+
+label {
+  visibility: hidden !important;
+
+}
+
+
+
