@@ -1,11 +1,11 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 
-from DashboardApp.views import visualize_data, \
-    settings_weather, settings_locations, settings_sensors
+from DashboardApp.views import index, settings_weather, settings_locations, \
+    settings_sensors, filter_latest
 
 urlpatterns = [
-    path("", visualize_data, name="index"),
+    path("", index, name="index"),
 
     # Authentication
     path('auth/login/',
@@ -18,4 +18,7 @@ urlpatterns = [
     path("settings/weather/", settings_weather, name="settings/weather"),
     path("settings/locations/", settings_locations, name="settings/locations"),
     path("settings/sensors/", settings_sensors, name="settings/sensors"),
+
+    # AJAX data providers
+    path("filter/latest/", filter_latest, name="filter/latest")
 ]

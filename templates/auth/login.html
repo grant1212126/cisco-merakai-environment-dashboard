@@ -1,10 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block header %}
-{% endblock header %}
-
 {% block content %}
+<div class="box">
 <h1>Login</h1>
 <form method="POST" action="{% url 'auth/login' %}">
     {% csrf_token %}
@@ -25,4 +23,5 @@
     </tr>
     </table>
 </form>
+</div>
 {% endblock content %}

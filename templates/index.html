@@ -6,51 +6,54 @@
 {% endblock header %}
 
 {% block content %}
-<div class = "col-md-10 col-12 mx-auto" style="margin-top:50px">
-	<div class="row">
-		<div class="col-md-6 col-12">
-			<div class = "card" style="margin-top:30px">
-				<div class = "card-body" >
-					Latest humidity reading:
-					<p id = "h"><script>docWrite(h)</script></p>
-					Latest temperature reading:
-					<p id = "t"><script>docWrite(t)</script></p>
-					Latest occupancy reading:
-					<p id = "o"><script>docWrite(o)</script></p>
-					<!-- <input onchange = "filterData()" type="date" id="startDate">
-					<input onchange = "filterData()" type="time" id="startTime">
-					<input onchange = "filterData()" type="date" id="endDate">
-					<input onchange = "filterData()" type="time" id="endTime"> -->
-				</div>
-			</div>
-		</div>
-		<div class="col-md-6 col-12">
-			<div class = "card" style="margin-top:30px">
-				<div class = "card-body">
-					<canvas id = "ChartHumidity" width="300" height="150">
-					</canvas>
-
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="row">
-		<div class="col-md-6 col-12">
-			<div class = "card" style="margin-top:30px">
-				<div class = "card-body">
-					<canvas id = "ChartTemperature" width="300" height="150"></canvas>
-				</div>
-			</div>
-		</div>
-		<div class="col-md-6 col-12">
-			<div class = "card" style="margin-top:30px">
-				<div class = "card-body">
-					<canvas id = "ChartOccupancy" width="300" height="150">
-					</canvas>
-
-				</div>
-			</div>
-		</div>
-	</div>
+<div class="box">
+  <table>
+    <form method="POST">
+      {% csrf_token %}
+      <tr>
+        <td><label for="select">Select location</label></td>
+        <td>
+          <select id="location_select" name="select" onchange="this.form.submit();">
+          {% for location in locations %}
+            {% if location.id == selected_location.id %}
+            <option selected value="{{ location.id }}">{{ location.name }}</option>
+            {% else %}
+            <option value="{{ location.id }}">{{ location.name }}</option>
+            {% endif %}
+          {% endfor %}
+          </select>
+        </td>
+      </tr>
+    </form>
+    <tr>
+      <td>Latest humidity</td>
+      <td id="h"></td>
+    </tr>
+    <tr>
+      <td>Latest temperature</td>
+      <td id="t"></td>
+    </tr>
+    <tr>
+      <td>Latest occupancy</td>
+      <td id="o"></td>
+    </tr>
+    <tr>
+      <td>Outdoors humidity</td>
+      <td id="outside_h"></td>
+    </tr>
+    <tr>
+      <td>Outdoors temperature</td>
+      <td id="outside_t"></td>
+    </tr>
+  </table>
+</div>
+<div class="box">
+  <canvas id="ChartHumidity" width="300" height="150"></canvas>
+</div>
+<div class="box">
+  <canvas id="ChartTemperature" width="300" height="150"></canvas>
+</div>
+<div class="box">
+  <canvas id="ChartOccupancy" width="300" height="150"></canvas>
 </div>
 {% endblock content %}

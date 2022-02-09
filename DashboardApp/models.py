@@ -41,7 +41,7 @@ class Sensor(models.Model):
     kind = models.CharField(max_length=13, choices=Kind.choices)
 
     # Location the device is installed at
-    location = models.ForeignKey(Location, on_delete=models.CASCADE, null=True)
+    location = models.ForeignKey(Location, on_delete=models.CASCADE)
 
     # User friendly description
     description = models.TextField(blank=True)
@@ -64,7 +64,7 @@ class DataPoint(models.Model):
         OC  = "Occupancy"
 
     # Location the data was collected from
-    location = models.ForeignKey(Location, on_delete=models.CASCADE, null=True)
+    location = models.ForeignKey(Location, on_delete=models.CASCADE)
     # Sensor the data was collected from
     sensor = models.ForeignKey(Sensor, on_delete=models.CASCADE)
 

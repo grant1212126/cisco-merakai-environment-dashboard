@@ -1,12 +1,14 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block content %}
-
+{% block subnav %}
 {% include 'settings/nav.html' %}
+{% endblock subnav %}
 
-<div id="wrap">
+{% block content %}
+<div class="box">
 <table>
+  <!-- Add Meraki device form !-->
   <tr>
     <td colspan="2"><h3>Add sensors</h3></td>
   </tr>
@@ -19,6 +21,17 @@
           {% for dev in meraki_devices %}
             <option value="{{ dev.idx }}">{{ dev.kind }} - {{ dev.serial }} - {{ dev.name }}</option>
           {% endfor %}
+        </select>
+      </td>
+      <td><input class="submit_button" type="submit" name="refresh" value="Refresh"></td>
+    </tr>
+    <tr>
+      <td>Location</td>
+      <td>
+        <select name="location">
+        {% for location in locations %}
+          <option value="{{ location.id }}">{{ location.name }}</option>
+        {% endfor %}
         </select>
       </td>
     </tr>
@@ -72,7 +85,6 @@
       <td><label for="location">Location</label></td>
       <td>
         <select name="location">
-          <option value="null">(N/A)</option>
         {% for location in locations %}
           {% if location.id == selected_sensor.location %}
             <option selected value="{{ location.id }}">{{ location.name }}</option>
