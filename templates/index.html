@@ -6,51 +6,24 @@
 {% endblock header %}
 
 {% block content %}
-<div class = "col-md-10 col-12 mx-auto" style="margin-top:50px">
-	<div class="row">
-		<div class="col-md-6 col-12">
-			<div class = "card" style="margin-top:30px">
-				<div class = "card-body" >
-					Latest humidity reading:
-					<p id = "h"><script>docWrite(h)</script></p>
-					Latest temperature reading:
-					<p id = "t"><script>docWrite(t)</script></p>
-					Latest occupancy reading:
-					<p id = "o"><script>docWrite(o)</script></p>
-					<!-- <input onchange = "filterData()" type="date" id="startDate">
-					<input onchange = "filterData()" type="time" id="startTime">
-					<input onchange = "filterData()" type="date" id="endDate">
-					<input onchange = "filterData()" type="time" id="endTime"> -->
-				</div>
-			</div>
-		</div>
-		<div class="col-md-6 col-12">
-			<div class = "card" style="margin-top:30px">
-				<div class = "card-body">
-					<canvas id = "ChartHumidity" width="300" height="150">
-					</canvas>
-
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="row">
-		<div class="col-md-6 col-12">
-			<div class = "card" style="margin-top:30px">
-				<div class = "card-body">
-					<canvas id = "ChartTemperature" width="300" height="150"></canvas>
-				</div>
-			</div>
-		</div>
-		<div class="col-md-6 col-12">
-			<div class = "card" style="margin-top:30px">
-				<div class = "card-body">
-					<canvas id = "ChartOccupancy" width="300" height="150">
-					</canvas>
-
-				</div>
-			</div>
-		</div>
-	</div>
+<div class="box">
+    Latest humidity reading: <p id="h"></p>
+    Latest temperature reading: <p id="t"></p>
+    Latest occupancy reading: <p id = "o"></p>
+    <!--
+    <input onchange = "filterData()" type="date" id="startDate">
+    <input onchange = "filterData()" type="time" id="startTime">
+    <input onchange = "filterData()" type="date" id="endDate">
+    <input onchange = "filterData()" type="time" id="endTime">
+    -->
+</div>
+<div class="box">
+    <canvas id="ChartHumidity" width="300" height="150"></canvas>
+</div>
+<div class="box">
+    <canvas id="ChartTemperature" width="300" height="150"></canvas>
+</div>
+<div class="box">
+    <canvas id="ChartOccupancy" width="300" height="150"></canvas>
 </div>
 {% endblock content %}
