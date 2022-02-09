@@ -148,70 +148,58 @@ def settings_sensors(request):
     context["sensors"] = sensors
     context["selected_sensor"] = selected_sensor
 
-
     return render(request, "settings/sensors.html", context=context)
 
-# Feeds data to index.html
 @login_required
-def visualize_data(request):
-    data = {
-        "humidity_data": DataPoint.objects.filter(
-            kind = DataPoint.Kind.HD).values_list("value", "tstamp"),
-        "temperature_data": DataPoint.objects.filter(
-            kind = DataPoint.Kind.TM).values_list("value", "tstamp"),
-        "occupancy_data": DataPoint.objects.filter(
-            kind = DataPoint.Kind.OC).values_list("value", "tstamp"),
+def index(request):
+    context = {}
+    locations, selected_location = \
+        list_with_selected(Location.objects.all(), request.POST.get("select"))
+    context["locations"] = locations
+    context["selected_location"] = selected_location
+    return render(request, "index.html", context=context)
+
+def chartify_data(timeseries, label, color):
+    return {
+        "labels": [p[1].strftime("%m-%d-%Y %H:%M:%S") for p in timeseries],
+        "datasets":[{
+            "label": label,
+            "data": [p[0] for p in timeseries],
+            "backgroundColor": color,
+            "borderColor": color,
+            "pointRadius": 2.5,
+        }]
     }
 
-    # Dictionaries structured in a Chart JS compatible way
-    if request.is_ajax():
+@login_required
+def filter_latest(request):
+    location = Location.objects.get(id=request.GET.get("location"))
 
-        humidity_data = {
-            "labels": [data[1].strftime("%m-%d-%Y %H:%M:%S") for data in data["humidity_data"]],
-            "datasets":[{
-                "label": "Humidity",
-                "data": [data[0] for data in data["humidity_data"]],
-                "backgroundColor": "#00ffff",
-                "borderColor": "#00ffff",
-                "pointRadius": 2.5,
-            }]
-        }
+    humidity_data = DataPoint.objects.filter(kind=DataPoint.Kind.HD,
+        location=location).values_list("value", "tstamp")
+    temperature_data = DataPoint.objects.filter(kind=DataPoint.Kind.TM,
+        location=location).values_list("value", "tstamp")
+    occupancy_data = DataPoint.objects.filter(kind=DataPoint.Kind.OC,
+        location=location).values_list("value", "tstamp")
 
-        temperature_data = {
-            "labels": [data[1].strftime("%m-%d-%Y %H:%M:%S") for data in data["temperature_data"]],
-            "datasets":[{
-                "label": "Temperature",
-                "data": [data[0] for data in data["temperature_data"]],
-                "backgroundColor": "#FF7F00",
-                "borderColor": "#FF7F00",
-                "pointRadius": 2.5,
+    # Format data in a ChartJS compatible way
+    chart_data = {
+        "humidity_data": chartify_data(humidity_data, "Humidity", "#00ffff"),
+        "temperature_data": chartify_data(temperature_data, "Temperature", "#ff7f00"),
+        "occupancy_data": chartify_data(occupancy_data, "Occupancy", "#7cfc00"),
+    }
 
-            }]
-        }
+    # Get latest readings if present
+    if humidity_data:
+        chart_data["latest_hum"] = humidity_data.last()[0]
+    if temperature_data:
+        chart_data["latest_temp"] = temperature_data.last()[0]
+    if occupancy_data:
+        chart_data["latest_occ"] = occupancy_data.last()[0]
 
-        occupancy_data = {
-            "labels": [data[1].strftime("%m-%d-%Y %H:%M:%S") for data in data["occupancy_data"]],
-            "datasets":[{
-                "label": "Occupancy",
-                "data": [data[0] for data in data["occupancy_data"]],
-                "backgroundColor": "#7CFC00",
-                "borderColor": "#7CFC00",
-                "pointRadius": 2.5,
+    weather_opts = WeatherOptions.objects.first()
+    if weather_opts:
+        chart_data["latest_weather"] = \
+            weather.read_loc_weather(weather_opts.lat, weather_opts.lon)
 
-            }]
-        }
-
-        # Json response data
-        chart_data  = {
-            "humidity_data": humidity_data,
-            "temperature_data": temperature_data,
-            "occupancy_data": occupancy_data,
-            "latest_hum": [data[0] for data in data["humidity_data"]][-1],
-            "latest_temp": [data[0] for data in data["temperature_data"]][-1],
-            "latest_occ":[data[0] for data in data["occupancy_data"]][-1]
-        }
-
-        
-        return JsonResponse(data=chart_data, safe=False)
-
-    return render(request, "index.html")
+    return JsonResponse(data=chart_data, safe=False)

@@ -26,7 +26,7 @@ def read_city_weather(city):
     # API endpoint
     url = f"{base_url}/weather"
     # GET parameters
-    url += f"?q={city}&app_id={apikey}"
+    url += f"?q={city}&appid={apikey}&units=metric"
     # Perform request
     resp = requests.get(url)
     if resp.status_code != 200:
@@ -38,7 +38,8 @@ def read_loc_weather(lat, lon):
     # API endpoint
     url = f"{base_url}/weather"
     # GET parameters
-    url += f"?lat={lat}&lon={lon}&app_id={apikey}"
+    url += f"?lat={lat}&lon={lon}&appid={apikey}&units=metric"
+    print(url)
     # Perform request
     resp = requests.get(url)
     if resp.status_code != 200:
