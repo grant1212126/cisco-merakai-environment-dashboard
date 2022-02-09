@@ -2,6 +2,7 @@ from django.forms.models import model_to_dict
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
+from django.contrib.auth.decorators import login_required
 
 from DashboardApp.models import WeatherOptions, Location, Sensor, DataPoint
 
@@ -10,6 +11,19 @@ from lib import meraki, weather
 import datetime
 import json
 
+def list_with_selected(query, selected_id):
+    result = []
+    selected = None
+    for obj in query:
+        cur_dict = model_to_dict(obj)
+        if str(obj.id) == selected_id:
+            selected = cur_dict
+        result.append(cur_dict)
+    if selected is None and len(result) > 0:
+        selected = result[0]
+    return result, selected
+
+@login_required
 def settings_weather(request):
     context = {}
 
@@ -43,18 +57,7 @@ def settings_weather(request):
 
     return render(request, "settings/weather.html", context=context)
 
-def list_with_selected(query, selected_id):
-    result = []
-    selected = None
-    for obj in query:
-        cur_dict = model_to_dict(obj)
-        if str(obj.id) == selected_id:
-            selected = cur_dict
-        result.append(cur_dict)
-    if selected is None and len(result) > 0:
-        selected = result[0]
-    return result, selected
-
+@login_required
 def settings_locations(request):
     context = {}
 
@@ -82,6 +85,7 @@ def settings_locations(request):
     # Render page
     return render(request, "settings/locations.html", context=context)
 
+@login_required
 def settings_sensors(request):
     context = {}
 
@@ -142,6 +146,7 @@ def settings_sensors(request):
     return render(request, "settings/sensors.html", context=context)
 
 # Feeds data to index.html
+@login_required
 def visualize_data(request):
     data = {
         "humidity_data": DataPoint.objects.filter(

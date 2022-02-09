@@ -15,11 +15,51 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.6.0/dist/chart.min.js">
     </script>
 
+    <!-- Base Style !-->
+    <style type="text/css">
+      body {
+        background-color: #616161;
+        color: #F7F9F9;
+        padding: 1em;
+      }
+      #wrap {
+        border: 1px solid white;
+        border-radius: 10px;
+        margin-top: 1em;
+        padding: 1em;
+      }
+      .submit_button {
+        width: 100px;
+      }
+      .card {
+        background-color: #424242;
+      }
+      #nav, #subnav {
+        border-bottom: 1px solid white;
+        overflow: hidden;
+      }
+      #nav a, #subnav a {
+        display: block;
+        float: left;
+        color: white;
+        padding: 20px;
+        font-size: 25px;
+        text-decoration: none;
+        vertical-align: middle;
+      }
+      #nav a:hover, #subnav a:hover {
+        text-decoration: underline;
+      }
+      #subnav a {
+        font-size: 18px;
+      }
+    </style>
+
+    <!-- Base JS !-->
     <script type="text/javascript">
       //
       // Get the Django CSRF middleware token
       //
-
       function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -42,6 +82,12 @@
     {% endblock header %}
   </head>
   <body>
+    <div id="nav">
+      <a href="{% url 'index' %}">Home</a>
+      <a href="{% url 'settings/weather' %}">Settings</a>
+      <a href="{% url 'auth/logout' %}">Log Out</a>
+    </div>
+    <div style="clear: both;"></div>
     {% block content %}
     {% endblock content %}
   </body>

@@ -1,19 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block header %}
-<link rel="stylesheet" type="text/css" href="/static/css/settings.css">
-{% endblock header %}
-
 {% block content %}
 
-<h1>Settings</h1>
-
-<div id="nav">
-  <a href="/settings/weather/">Weather</a>
-  <a href="/settings/locations/">Locations</a>
-  <a class="active" href="/settings/sensors/">Sensors</a>
-</div>
+{% include 'settings/nav.html' %}
 
 <div id="wrap">
 <table>

@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block header %}
+{% endblock header %}
+
+{% block content %}
+<h1>Login</h1>
+<form method="POST" action="{% url 'auth/login' %}">
+    {% csrf_token %}
+    <table>
+    {% for field in form %}
+        <tr>
+            <td>{{ field.label }}</td>
+            <td>{{ field }}</td>
+        </tr>
+        {% if field.errors %}
+        <tr>
+            <td colspan="2">{{ field.errors }}</td>
+        </tr>
+        {% endif %}
+    {% endfor %}
+    <tr>
+        <td colspan="2"><input type="submit" value="Log In"></td>
+    </tr>
+    </table>
+</form>
+{% endblock content %}
