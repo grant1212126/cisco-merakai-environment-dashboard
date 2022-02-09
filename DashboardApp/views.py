@@ -23,6 +23,27 @@ def list_with_selected(query, selected_id):
         selected = result[0]
     return result, selected
 
+def get_meraki_devices():
+    meraki_devices = []
+    meraki_dev_idx = 0
+    for org in meraki.get_orgs():
+        for dev in meraki.get_devices(org["id"]):
+            if dev["productType"] == "camera":
+                kind = Sensor.Kind.CAM
+            elif dev["productType"] == "sensor":
+                kind = Sensor.Kind.ENV
+            else:
+                continue
+            meraki_devices.append({
+                "idx": meraki_dev_idx,
+                "org_id": org["id"],
+                "serial": dev["serial"],
+                "name": dev["name"] if dev["name"] else "",
+                "kind": kind
+            })
+            meraki_dev_idx += 1
+    return meraki_devices
+
 @login_required
 def settings_weather(request):
     context = {}
@@ -90,26 +111,10 @@ def settings_sensors(request):
     context = {}
 
     # Obtain Meraki devices from Dashboard API
-    # TODO: Maybe cache this somewhere
-    meraki_devices = []
-    meraki_dev_idx = 0
-    for org in meraki.get_orgs():
-        for dev in meraki.get_devices(org["id"]):
-            if dev["productType"] == "camera":
-                kind = Sensor.Kind.CAM
-            elif dev["productType"] == "sensor":
-                kind = Sensor.Kind.ENV
-            else:
-                continue
-
-            meraki_devices.append({
-                "idx": meraki_dev_idx,
-                "org_id": org["id"],
-                "serial": dev["serial"],
-                "name": dev["name"] if dev["name"] else "",
-                "kind": kind
-            })
-            meraki_dev_idx += 1
+    meraki_devices = request.session.get("meraki_devices")
+    if request.POST.get("refresh") or meraki_devices == None:
+        meraki_devices = get_meraki_devices()
+        request.session["meraki_devices"] = meraki_devices
 
     # Perform any requested actions
     if request.POST.get("add"):     # Add sensor object for Meraki device
