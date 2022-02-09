@@ -114,18 +114,19 @@ def settings_sensors(request):
     # Perform any requested actions
     if request.POST.get("add"):     # Add sensor object for Meraki device
         meraki_dev_idx = int(request.POST.get("meraki_dev_idx"))
+        location_id = request.POST.get("location")
         dev = meraki_devices[meraki_dev_idx]
         sensor = Sensor(
             org_id=dev["org_id"],
             serial=dev["serial"],
             kind=dev["kind"],
+            location=Location.objects.get(id=location_id),
             description=dev["name"],
             interval=60)
         sensor.save()
     elif request.POST.get("edit"):  # Edit sensor object
         sensor = Sensor.objects.get(id=request.POST.get("id"))
-        if request.POST.get("location") != "null":
-            sensor.location = Location.objects.get(id=request.POST.get("location"))
+        sensor.location = Location.objects.get(id=request.POST.get("location"))
         sensor.description = request.POST.get("description")
         sensor.interval = int(request.POST.get("interval"))
         sensor.save()
