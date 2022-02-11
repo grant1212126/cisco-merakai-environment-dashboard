@@ -10,6 +10,7 @@ from lib import meraki, weather
 
 import datetime
 import json
+from .forms import DateTimeForm
 
 def list_with_selected(query, selected_id):
     result = []
@@ -152,11 +153,15 @@ def settings_sensors(request):
 
 @login_required
 def index(request):
-    context = {}
     locations, selected_location = \
         list_with_selected(Location.objects.all(), request.POST.get("select"))
-    context["locations"] = locations
-    context["selected_location"] = selected_location
+
+    context = {
+        "locations": locations,
+        "selected_location": selected_location,
+        "form": DateTimeForm(request.POST or None),
+
+    }
     return render(request, "index.html", context=context)
 
 def chartify_data(timeseries, label, color):
