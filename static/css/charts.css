@@ -1,0 +1,56 @@
+body {
+        background-color: #616161;
+        color: #F7F9F9;
+        padding: 1em;
+      }
+
+      /* Content area */
+      #wrap {
+        margin-top: 20px;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        /*justify-content: space-around;*/
+      }
+      .box {
+        border-radius: 2px;
+        background-color: #424242;
+        border: 1px solid white;
+        padding: 1em;
+        box-sizing: border-box;
+        margin: 10px;
+        width: calc(50% - 20px);  /* Need to manually substract margin */
+        height: 0%;               /* Make sure the boxes fit the content */
+      }
+
+      @media only screen and (max-width: 1000px) {
+        .box {
+          width: 100%;            /* Let boxes span all of small screens */
+        }
+      }
+
+      /* Navigation bar(s) */
+      #nav, #subnav {
+        border-bottom: 1px solid white;
+        overflow: hidden;
+      }
+      #nav a, #subnav a {
+        display: block;
+        float: left;
+        color: white;
+        padding: 20px;
+        font-size: 25px;
+        text-decoration: none;
+        vertical-align: middle;
+      }
+      #nav a:hover, #subnav a:hover {
+        text-decoration: underline;
+      }
+      #subnav a {
+        font-size: 18px;
+      }
+
+      /* Misc */
+      .submit_button {
+        width: 100px;
+      }
