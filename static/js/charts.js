@@ -46,10 +46,13 @@ function MakeCharts() {
 		// If it succeeds, all the charts & latest readings are created/upadted
 		success: function(response) {
 
+			// The below variables are maniuplated during the date-time-dependent filtration process 
 			humidityData = response["humidity_data"];
 			temperatureData = response["temperature_data"];
 			occupancyData = response["occupancy_data"];
 
+			// filters data based on user-provided criteria
+			// If nothing provided -> show the last 24h of data
 			filterData();
 
 			MakeChart(0, humidityData, "ChartHumidity");
