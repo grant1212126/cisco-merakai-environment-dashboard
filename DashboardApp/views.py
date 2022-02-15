@@ -11,6 +11,10 @@ from lib import meraki, weather
 import datetime
 import json
 from .forms import DateTimeForm
+# Regression imports
+import numpy as np
+import re
+from sklearn.linear_model import LinearRegression
 
 def list_with_selected(query, selected_id):
     result = []
@@ -186,6 +190,25 @@ def filter_latest(request):
         location=location).values_list("value", "tstamp")
     occupancy_data = DataPoint.objects.filter(kind=DataPoint.Kind.OC,
         location=location).values_list("value", "tstamp")
+
+
+    # Preliminary regression prediction testing
+    # Ugly, I know, pester me about that later (no really, do pester me)
+    time = [p[1].strftime("%m-%d-%Y %H:%M:%S") for p in humidity_data]
+    time = np.array([re.split('-|:| ',a) for a in time]).astype(int)
+    time = time[:,1:5]
+    time = np.delete(time,1,1)
+    humidity = np.array([p[0] for p in humidity_data]).astype(int)
+
+    time_hum_model = LinearRegression()
+    time_hum_model.fit(time, humidity)
+    #theta0 = time_hum_model.intercept_
+    #theta1, theta2, theta3 = time_hum_model.coef_
+    to_predict = (datetime.datetime.now() + datetime.timedelta(minutes=30))
+
+    hum_prediction = time_hum_model.predict([[int(to_predict.day), int(to_predict.hour), int(to_predict.minute)]]).round(2)
+    print(hum_prediction[0])
+
 
     # Format data in a ChartJS compatible way
     chart_data = {
