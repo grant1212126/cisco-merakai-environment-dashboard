@@ -207,7 +207,7 @@ def filter_latest(request):
     to_predict = (datetime.datetime.now() + datetime.timedelta(minutes=30))
 
     hum_prediction = time_hum_model.predict([[int(to_predict.day), int(to_predict.hour), int(to_predict.minute)]]).round(2)
-    print(hum_prediction)[0]
+    print(hum_prediction[0])
 
 
     # Format data in a ChartJS compatible way
