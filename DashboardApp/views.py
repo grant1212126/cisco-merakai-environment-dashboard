@@ -1,127 +1,210 @@
-from django.shortcuts import render
+from django.forms.models import model_to_dict
 from django.http import HttpResponse, JsonResponse
-from DashboardApp.models import DataPoint, MerakiSensor, MerakiDataSource
-from lib import meraki
+from django.shortcuts import render
+from django.views.decorators.http import require_http_methods
+from django.contrib.auth.decorators import login_required
+
+from DashboardApp.models import WeatherOptions, Location, Sensor, DataPoint
+
+from lib import meraki, weather
+
 import datetime
 import json
+from .forms import DateTimeForm
 
-# Sets up add_device.html and adds device when posted
-def add_device(request):
-    class Device:
-        def __init__(self, org_id, serial, description, supported_sensors):
-            self.org_id = org_id
-            self.serial = serial
-            self.description = description
-            self.supported_sensors = supported_sensors
+def list_with_selected(query, selected_id):
+    result = []
+    selected = None
+    for obj in query:
+        cur_dict = model_to_dict(obj)
+        if str(obj.id) == selected_id:
+            selected = cur_dict
+        result.append(cur_dict)
+    if selected is None and len(result) > 0:
+        selected = result[0]
+    return result, selected
 
-    if request.method == "POST":
-        org_id = request.POST.get("org_id")
-        serial = request.POST.get("serial")
-        description = request.POST.get("description")
+def get_meraki_devices():
+    meraki_devices = []
+    meraki_dev_idx = 0
+    for org in meraki.get_orgs():
+        for dev in meraki.get_devices(org["id"]):
+            if dev["productType"] == "camera":
+                kind = Sensor.Kind.CAM
+            elif dev["productType"] == "sensor":
+                kind = Sensor.Kind.ENV
+            else:
+                continue
+            meraki_devices.append({
+                "idx": meraki_dev_idx,
+                "org_id": org["id"],
+                "serial": dev["serial"],
+                "name": dev["name"] if dev["name"] else "",
+                "kind": kind
+            })
+            meraki_dev_idx += 1
+    return meraki_devices
 
-        def add_sensor(sensor):
-            ds = MerakiDataSource(org_id=org_id,
-                    serial=serial,
-                    description=description,
-                    interval=interval,
-                    sensor=sensor)
-            ds.save()
+@login_required
+def settings_weather(request):
+    context = {}
 
-        interval = 10 # FIXME: stop hard-coding this
-        if request.POST.get("sensor_oc") == "on":
-            add_sensor(MerakiSensor.OCCUPANCY)
-        if request.POST.get("sensor_tm") == "on":
-            add_sensor(MerakiSensor.TEMPERATURE)
-        if request.POST.get("sensor_hd") == "on":
-            add_sensor(MerakiSensor.HUMIDITY)
+    opts = WeatherOptions.objects.first()
+    from_search = False
+    if request.POST.get("search"):
+        city_name = request.POST.get("city")
+        city = weather.search_city(city_name)
+        if city:
+            country = city["country"]
+            state = city["state"]
+            if state != "":
+                context["description"] = f"{city_name}, {state}, {country}"
+            else:
+                context["description"] = f"{city_name}, {country}"
+            context["lat"] =  city["coord"]["lat"]
+            context["lon"] =  city["coord"]["lon"]
+        from_search = True
+    elif request.POST.get("edit"):
+        if opts is None:
+            opts = WeatherOptions()
+        opts.description = request.POST.get("description")
+        opts.lat = float(request.POST.get("lat"))
+        opts.lon = float(request.POST.get("lon"))
+        opts.save()
 
-    elif request.is_ajax():
-        org_id = request.GET.get("org_id")
-        if not isinstance(org_id, str):
-            raise ValueError()
+    if not from_search and opts:
+        context["description"] = opts.description
+        context["lat"] = opts.lat
+        context["lon"] = opts.lon
 
-        devices = []
-        for meraki_dev in meraki.get_devices(org_id):
-            print(meraki_dev)
-            supported_sensors = []
+    return render(request, "settings/weather.html", context=context)
 
-            if meraki_dev["productType"] == "camera":
-                supported_sensors.append(MerakiSensor.OCCUPANCY)
-            elif meraki_dev["productType"] == "sensor":
-                # TODO: we might want to check if a "sensor" device truly
-                # supports these metrics, for now I am just assuming its
-                # always gonna be an MT10
-                supported_sensors.append(MerakiSensor.HUMIDITY)
-                supported_sensors.append(MerakiSensor.TEMPERATURE)
+@login_required
+def settings_locations(request):
+    context = {}
 
-            device = Device(org_id, meraki_dev["serial"],
-                            meraki_dev["name"], supported_sensors)
-            devices.append(device.__dict__)
+    # Perform any requested actions
+    if request.POST.get("add"):
+        location = Location(
+            name=request.POST.get("name"),
+            description=request.POST.get("description"))
+        location.save()
+    elif request.POST.get("edit"):
+        location = Location.objects.get(id=request.POST.get("id"))
+        location.name = request.POST.get("name")
+        location.description = request.POST.get("description")
+        location.save()
+    elif request.POST.get("delete"):
+        location = Location.objects.get(id=request.POST.get("id"))
+        location.delete()
 
-        return JsonResponse(data=devices, safe=False)
+    locations, selected_location = \
+        list_with_selected(Location.objects.all(), request.POST.get("select"))
 
-    return render(request, "add_device.html")
+    context["locations"] = locations
+    context["selected_location"] = selected_location
 
-# Feeds data to index.html
-def visualize_data(request):
-    data = {
-        "humidity_data": DataPoint.objects.filter(
-            sensor = "HD").values_list("value", "tstamp"),
-        "temperature_data": DataPoint.objects.filter(
-            sensor = "TM").values_list("value", "tstamp"),
-        "occupancy_data": DataPoint.objects.filter(
-            sensor = "OC").values_list("value", "tstamp"),
+    # Render page
+    return render(request, "settings/locations.html", context=context)
+
+@login_required
+def settings_sensors(request):
+    context = {}
+
+    # Obtain Meraki devices from Dashboard API
+    meraki_devices = request.session.get("meraki_devices")
+    if request.POST.get("refresh") or meraki_devices == None:
+        meraki_devices = get_meraki_devices()
+        request.session["meraki_devices"] = meraki_devices
+
+    # Perform any requested actions
+    if request.POST.get("add"):     # Add sensor object for Meraki device
+        meraki_dev_idx = int(request.POST.get("meraki_dev_idx"))
+        location_id = request.POST.get("location")
+        dev = meraki_devices[meraki_dev_idx]
+        sensor = Sensor(
+            org_id=dev["org_id"],
+            serial=dev["serial"],
+            kind=dev["kind"],
+            location=Location.objects.get(id=location_id),
+            description=dev["name"],
+            interval=60)
+        sensor.save()
+    elif request.POST.get("edit"):  # Edit sensor object
+        sensor = Sensor.objects.get(id=request.POST.get("id"))
+        sensor.location = Location.objects.get(id=request.POST.get("location"))
+        sensor.description = request.POST.get("description")
+        sensor.interval = int(request.POST.get("interval"))
+        sensor.save()
+    elif request.POST.get("delete"):  # Delete sensor object
+        sensor = Sensor.objects.get(id=request.POST.get("id"))
+        sensor.delete()
+
+    # Get selected sensor
+    sensors, selected_sensor = \
+        list_with_selected(Sensor.objects.all(), request.POST.get("select"))
+
+    context["meraki_devices"] = meraki_devices
+    context["locations"] = [ model_to_dict(loc) for loc in Location.objects.all() ]
+    context["sensors"] = sensors
+    context["selected_sensor"] = selected_sensor
+
+    return render(request, "settings/sensors.html", context=context)
+
+@login_required
+def index(request):
+    locations, selected_location = \
+        list_with_selected(Location.objects.all(), request.POST.get("select"))
+
+    context = {
+        "locations": locations,
+        "selected_location": selected_location,
+        "form": DateTimeForm(request.POST or None),
+
+    }
+    return render(request, "index.html", context=context)
+
+def chartify_data(timeseries, label, color):
+    return {
+        "labels": [p[1].strftime("%m-%d-%Y %H:%M:%S") for p in timeseries],
+        "datasets":[{
+            "label": label,
+            "data": [p[0] for p in timeseries],
+            "backgroundColor": color,
+            "borderColor": color,
+            "pointRadius": 2.5,
+        }]
     }
 
-    # Dictionaries structured in a Chart JS compatible way
-    if request.is_ajax():
+@login_required
+def filter_latest(request):
+    location = Location.objects.get(id=request.GET.get("location"))
 
-        humidity_data = {
-            "labels": [data[1].strftime("%m-%d-%Y %H:%M:%S") for data in data["humidity_data"]],
-            "datasets":[{
-                "label": "Humidity",
-                "data": [data[0] for data in data["humidity_data"]],
-                "backgroundColor": "#00ffff",
-                "borderColor": "#00ffff",
-                "pointRadius": 2.5,
-            }]
-        }
+    humidity_data = DataPoint.objects.filter(kind=DataPoint.Kind.HD,
+        location=location).values_list("value", "tstamp")
+    temperature_data = DataPoint.objects.filter(kind=DataPoint.Kind.TM,
+        location=location).values_list("value", "tstamp")
+    occupancy_data = DataPoint.objects.filter(kind=DataPoint.Kind.OC,
+        location=location).values_list("value", "tstamp")
 
-        temperature_data = {
-            "labels": [data[1].strftime("%m-%d-%Y %H:%M:%S") for data in data["temperature_data"]],
-            "datasets":[{
-                "label": "Temperature",
-                "data": [data[0] for data in data["temperature_data"]],
-                "backgroundColor": "#FF7F00",
-                "borderColor": "#FF7F00",
-                "pointRadius": 2.5,
+    # Format data in a ChartJS compatible way
+    chart_data = {
+        "humidity_data": chartify_data(humidity_data, "Humidity", "#00ffff"),
+        "temperature_data": chartify_data(temperature_data, "Temperature", "#ff7f00"),
+        "occupancy_data": chartify_data(occupancy_data, "Occupancy", "#7cfc00"),
+    }
 
-            }]
-        }
+    # Get latest readings if present
+    if humidity_data:
+        chart_data["latest_hum"] = humidity_data.last()[0]
+    if temperature_data:
+        chart_data["latest_temp"] = temperature_data.last()[0]
+    if occupancy_data:
+        chart_data["latest_occ"] = occupancy_data.last()[0]
 
-        occupancy_data = {
-            "labels": [data[1].strftime("%m-%d-%Y %H:%M:%S") for data in data["occupancy_data"]],
-            "datasets":[{
-                "label": "Occupancy",
-                "data": [data[0] for data in data["occupancy_data"]],
-                "backgroundColor": "#7CFC00",
-                "borderColor": "#7CFC00",
-                "pointRadius": 2.5,
+    weather_opts = WeatherOptions.objects.first()
+    if weather_opts:
+        chart_data["latest_weather"] = \
+            weather.read_loc_weather(weather_opts.lat, weather_opts.lon)
 
-            }]
-        }
-
-        # Json response data
-        chart_data  = {
-            "humidity_data": humidity_data,
-            "temperature_data": temperature_data,
-            "occupancy_data": occupancy_data,
-            "latest_hum": [data[0] for data in data["humidity_data"]][-1],
-            "latest_temp": [data[0] for data in data["temperature_data"]][-1],
-            "latest_occ":[data[0] for data in data["occupancy_data"]][-1]
-        }
-
-        
-        return JsonResponse(data=chart_data, safe=False)
-
-    return render(request, "index.html")
+    return JsonResponse(data=chart_data, safe=False)
