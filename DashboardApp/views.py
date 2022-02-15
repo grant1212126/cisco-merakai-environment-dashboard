@@ -49,38 +49,40 @@ def settings_weather(request):
     context = {}
 
     opts = WeatherOptions.objects.first()
-    from_search = False
+    if opts is None:
+        opts = WeatherOptions()
+
     if request.POST.get("search"):
-        city_name = request.POST.get("city")
-        city = weather.search_city(city_name)
-        if city:
-            country = city["country"]
-            state = city["state"]
+        city = request.POST.get("city")
+        result = weather.search_city(city)
+        if result:
+            state = result["state"]
+            country = result["country"]
             if state != "":
-                context["description"] = f"{city_name}, {state}, {country}"
+                description = f"{city}, {state}, {country}"
             else:
-                context["description"] = f"{city_name}, {country}"
-            context["lat"] =  city["coord"]["lat"]
-            context["lon"] =  city["coord"]["lon"]
-        from_search = True
+                description = f"{city}, {country}"
+
+            opts.description = description
+            opts.lat = float(result["coord"]["lat"])
+            opts.lon = float(result["coord"]["lon"])
+            opts.save()
     elif request.POST.get("edit"):
-        if opts is None:
-            opts = WeatherOptions()
         opts.description = request.POST.get("description")
         opts.lat = float(request.POST.get("lat"))
         opts.lon = float(request.POST.get("lon"))
         opts.save()
 
-    if not from_search and opts:
-        context["description"] = opts.description
-        context["lat"] = opts.lat
-        context["lon"] = opts.lon
+    context["description"] = opts.description
+    context["lat"] = opts.lat
+    context["lon"] = opts.lon
 
     return render(request, "settings/weather.html", context=context)
 
 @login_required
 def settings_locations(request):
     context = {}
+    selected_id = request.POST.get("select")
 
     # Perform any requested actions
     if request.POST.get("add"):
@@ -88,17 +90,21 @@ def settings_locations(request):
             name=request.POST.get("name"),
             description=request.POST.get("description"))
         location.save()
+        # Set selection to newly created location
+        selected_id = str(location.id)
     elif request.POST.get("edit"):
         location = Location.objects.get(id=request.POST.get("id"))
         location.name = request.POST.get("name")
         location.description = request.POST.get("description")
         location.save()
+        # Retain edited location as selected
+        selected_id = str(location.id)
     elif request.POST.get("delete"):
         location = Location.objects.get(id=request.POST.get("id"))
         location.delete()
 
     locations, selected_location = \
-        list_with_selected(Location.objects.all(), request.POST.get("select"))
+        list_with_selected(Location.objects.all(), selected_id)
 
     context["locations"] = locations
     context["selected_location"] = selected_location
@@ -109,6 +115,7 @@ def settings_locations(request):
 @login_required
 def settings_sensors(request):
     context = {}
+    selected_id = request.POST.get("select")
 
     # Obtain Meraki devices from Dashboard API
     meraki_devices = request.session.get("meraki_devices")
@@ -129,19 +136,23 @@ def settings_sensors(request):
             description=dev["name"],
             interval=60)
         sensor.save()
+        # Set newly added sensor as selected
+        selected_id = str(sensor.id)
     elif request.POST.get("edit"):  # Edit sensor object
         sensor = Sensor.objects.get(id=request.POST.get("id"))
         sensor.location = Location.objects.get(id=request.POST.get("location"))
         sensor.description = request.POST.get("description")
         sensor.interval = int(request.POST.get("interval"))
         sensor.save()
+        # Retain edited sensor as selected
+        selected_id = str(sensor.id)
     elif request.POST.get("delete"):  # Delete sensor object
         sensor = Sensor.objects.get(id=request.POST.get("id"))
         sensor.delete()
 
     # Get selected sensor
     sensors, selected_sensor = \
-        list_with_selected(Sensor.objects.all(), request.POST.get("select"))
+        list_with_selected(Sensor.objects.all(), selected_id)
 
     context["meraki_devices"] = meraki_devices
     context["locations"] = [ model_to_dict(loc) for loc in Location.objects.all() ]
