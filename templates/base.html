@@ -55,7 +55,9 @@
         return cookieValue;
       }
     </script>
-
+  {% load static %}
+  <link rel="stylesheet" type="text/css" href="{% static 'css/charts.css' %}">
+  
     <!-- Page specific headers -->
     {% block header %}
     {% endblock header %}
