@@ -1,0 +1,59 @@
+body {
+  font-family: sans-serif;
+  background-color: #616161;
+  color: #F7F9F9;
+  padding: 1em;
+}
+
+/* Content area */
+#wrap {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.box {
+  border-radius: 2px;
+  background-color: #424242;
+  box-sizing: border-box;
+  border: 1px solid white;
+  padding: 1em;
+  margin: 10px;
+  flex: calc(50% - 20px);       /* Need to manually substract margin */
+}
+
+@media only screen and (max-width: 1200px) {
+  .box {
+    flex: 100%;                 /* Let boxes span all of small screens */
+  }
+}
+
+canvas {
+  width: 100% !important;
+}
+
+/* Navigation bar(s) */
+#nav, #subnav {
+  border-bottom: 1px solid white;
+  overflow: hidden;
+}
+#nav a, #subnav a {
+  display: block;
+  float: left;
+  color: white;
+  padding: 20px;
+  font-size: 25px;
+  text-decoration: none;
+  vertical-align: middle;
+}
+#nav a:hover, #subnav a:hover {
+  text-decoration: underline;
+}
+#subnav a {
+  font-size: 18px;
+}
+
+/* Misc */
+.submit_button {
+  width: 100px;
+}

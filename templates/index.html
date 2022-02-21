@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block header %}
-<script src = "{% static 'js/charts.js' %}"></script>
+<script src = "{% static 'charts.js' %}"></script>
 {% endblock header %}
 
 {% block content %}
@@ -48,12 +48,12 @@
   </table>
 </div>
 <div class="box">
-  <canvas id="ChartHumidity" width="300" height="150"></canvas>
+  <canvas id="ChartHumidity"></canvas>
 </div>
 <div class="box">
-  <canvas id="ChartTemperature" width="300" height="150"></canvas>
+  <canvas id="ChartTemperature"></canvas>
 </div>
 <div class="box">
-  <canvas id="ChartOccupancy" width="300" height="150"></canvas>
+  <canvas id="ChartOccupancy"></canvas>
 </div>
 {% endblock content %}
