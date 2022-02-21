@@ -39,7 +39,6 @@ def read_loc_weather(lat, lon):
     url = f"{base_url}/weather"
     # GET parameters
     url += f"?lat={lat}&lon={lon}&appid={apikey}&units=metric"
-    print(url)
     # Perform request
     resp = requests.get(url)
     if resp.status_code != 200:

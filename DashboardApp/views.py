@@ -6,10 +6,12 @@ from django.contrib.auth.decorators import login_required
 
 from DashboardApp.models import WeatherOptions, Location, Sensor, DataPoint
 
+from datetime import datetime
+from scipy.interpolate import interp1d
+import numpy as np
+
 from lib import meraki, weather
 
-import datetime
-import json
 
 def list_with_selected(query, selected_id):
     result = []
@@ -170,47 +172,120 @@ def index(request):
     context["selected_location"] = selected_location
     return render(request, "index.html", context=context)
 
-def chartify_data(timeseries, label, color):
-    return {
-        "labels": [p[1].strftime("%m-%d-%Y %H:%M:%S") for p in timeseries],
-        "datasets":[{
-            "label": label,
-            "data": [p[0] for p in timeseries],
-            "backgroundColor": color,
-            "borderColor": color,
-            "pointRadius": 2.5,
-        }]
-    }
+class Graph:
+    def __init__(self, label, func, begin, end):
+        self.label = label
+        self.func = func
+        self.begin = begin
+        self.end = end
+
+def get_graphs(sensors, kind, interp_kind):
+    graphs = []
+    min_x = np.inf
+    max_x = -np.inf
+
+    for sensor in sensors:
+        # Filter humidity data for the current sensor
+        humidity = DataPoint.objects.filter(kind=kind, sensor=sensor)
+
+        # Skip sensor if no data was collected
+        if not humidity:
+            continue
+
+        # Interpolate function from data
+        x = []
+        y = []
+        for p in humidity:
+            x.append(p.tstamp.timestamp())
+            y.append(p.value)
+
+        func = interp1d(x, y, kind=interp_kind, bounds_error=False)
+        begin = x[0]
+        end = x[-1]
+
+        # Add sensor info
+        graphs.append(Graph(sensor.description, func, begin, end))
+
+        # Find largest interval
+        if begin < min_x:
+            min_x = begin
+        if end > max_x:
+            max_x = end
+
+    if len(graphs) > 0:
+        return np.linspace(min_x, max_x, 200), graphs
+    else:
+        return None, None
 
 @login_required
 def filter_latest(request):
     location = Location.objects.get(id=request.GET.get("location"))
+    sensors = Sensor.objects.filter(location=location)
 
-    humidity_data = DataPoint.objects.filter(kind=DataPoint.Kind.HD,
-        location=location).values_list("value", "tstamp")
-    temperature_data = DataPoint.objects.filter(kind=DataPoint.Kind.TM,
-        location=location).values_list("value", "tstamp")
-    occupancy_data = DataPoint.objects.filter(kind=DataPoint.Kind.OC,
-        location=location).values_list("value", "tstamp")
+    hd_x, hd_graphs = get_graphs(sensors, DataPoint.Kind.HD, "linear")
+    tm_x, tm_graphs = get_graphs(sensors, DataPoint.Kind.TM, "linear")
+    oc_x, oc_graphs = get_graphs(sensors, DataPoint.Kind.OC, "nearest")
 
-    # Format data in a ChartJS compatible way
-    chart_data = {
-        "humidity_data": chartify_data(humidity_data, "Humidity", "#00ffff"),
-        "temperature_data": chartify_data(temperature_data, "Temperature", "#ff7f00"),
-        "occupancy_data": chartify_data(occupancy_data, "Occupancy", "#7cfc00"),
-    }
+    def cleanup_samples(x, graph):
+        samples = []
+        for y in graph.func(x):
+            samples.append(None if np.isnan(y) else y)
+        return samples
+
+    data = {}
+
+    if hd_x is not None:
+        data["humidity_data"] = {
+            "labels": [ datetime.fromtimestamp(x).strftime("%m-%d-%Y %H:%M:%S") for x in hd_x ],
+            "datasets":[ {
+                    "label": f"{graph.label} humidity %",
+                    "data": cleanup_samples(hd_x, graph),
+                    "backgroundColor": "#00ffff",
+                    "borderColor": "#00ffff",
+                    "pointRadius": 2.5,
+                } for graph in hd_graphs
+            ]
+        }
+
+    if tm_x is not None:
+        data["temperature_data"] = {
+            "labels": [ datetime.fromtimestamp(x).strftime("%m-%d-%Y %H:%M:%S") for x in tm_x ],
+            "datasets":[ {
+                    "label": f"{graph.label} temperature C",
+                    "data": cleanup_samples(tm_x, graph),
+                    "backgroundColor": "#ff7f00",
+                    "borderColor": "#ff7f00",
+                    "pointRadius": 2.5,
+                } for graph in tm_graphs
+            ]
+        }
+
+    if oc_x is not None:
+        data["occupancy_data"] = {
+            "labels": [ datetime.fromtimestamp(x).strftime("%m-%d-%Y %H:%M:%S") for x in oc_x ],
+            "datasets":[ {
+                    "label": f"{graph.label} occupancy",
+                    "data": cleanup_samples(oc_x, graph),
+                    "backgroundColor": "#7cfc00",
+                    "borderColor": "#7cfc00",
+                    "pointRadius": 2.5,
+                } for graph in oc_graphs
+            ]
+        }
 
     # Get latest readings if present
-    if humidity_data:
-        chart_data["latest_hum"] = humidity_data.last()[0]
-    if temperature_data:
-        chart_data["latest_temp"] = temperature_data.last()[0]
-    if occupancy_data:
-        chart_data["latest_occ"] = occupancy_data.last()[0]
+    def val_or_none(p):
+        if p is None:
+            return None
+        else:
+            return p.value
 
-    weather_opts = WeatherOptions.objects.first()
-    if weather_opts:
-        chart_data["latest_weather"] = \
-            weather.read_loc_weather(weather_opts.lat, weather_opts.lon)
+    data["latest_hum"] = val_or_none(DataPoint.objects.filter(kind=DataPoint.Kind.HD).last())
+    data["latest_temp"] = val_or_none(DataPoint.objects.filter(kind=DataPoint.Kind.TM).last())
+    data["latest_occ"] = val_or_none(DataPoint.objects.filter(kind=DataPoint.Kind.OC).last())
 
-    return JsonResponse(data=chart_data, safe=False)
+    wopt = WeatherOptions.objects.first()
+    if wopt:
+        data["latest_weather"] = weather.read_loc_weather(wopt.lat, wopt.lon)
+
+    return JsonResponse(data=data, safe=False)
