@@ -15,6 +15,7 @@ base_url = "https://api.meraki.com/api/v1"
 # Our API key is always in this environment variable
 apikey = os.getenv("MERAKI_DASHBOARD_API_KEY")
 
+
 def read_sensor(org_id, serial):
     # API endpoint
     url = f"{base_url}/organizations/{org_id}/sensor/readings/latest"

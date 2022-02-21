@@ -5,6 +5,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    <!-- Bootstrap CSS -->
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+ 
+
     <!-- jQuery CDN -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
@@ -12,64 +17,21 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.6.0/dist/chart.min.js">
     </script>
 
+     <!-- Moment JS -->
+    <script src="https://momentjs.com/downloads/moment.js"></script>
+
+    <!-- FontAwesome CSS-->
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.css">
+
+    <!-- Popperjs -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js" integrity="sha384-eMNCOe7tC1doHpGoWe/6oMVemdAVTMs2xqW4mwXrXsW0L84Iytr2wi5v2QjrP/xp" crossorigin="anonymous"></script>
+
+    <!-- Tempus Dominus JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/eonasdan-bootstrap-datetimepicker-bootstrap4beta@4.17.47-a/src/js/bootstrap-datetimepicker.min.js"></script>
+
     <!-- Base Style !-->
     <style type="text/css">
-      body {
-        background-color: #616161;
-        color: #F7F9F9;
-        padding: 1em;
-      }
-
-      /* Content area */
-      #wrap {
-        margin-top: 20px;
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        /*justify-content: space-around;*/
-      }
-      .box {
-        border-radius: 2px;
-        background-color: #424242;
-        border: 1px solid white;
-        padding: 1em;
-        box-sizing: border-box;
-        margin: 10px;
-        width: calc(50% - 20px);  /* Need to manually substract margin */
-        height: 0%;               /* Make sure the boxes fit the content */
-      }
-
-      @media only screen and (max-width: 1000px) {
-        .box {
-          width: 100%;            /* Let boxes span all of small screens */
-        }
-      }
-
-      /* Navigation bar(s) */
-      #nav, #subnav {
-        border-bottom: 1px solid white;
-        overflow: hidden;
-      }
-      #nav a, #subnav a {
-        display: block;
-        float: left;
-        color: white;
-        padding: 20px;
-        font-size: 25px;
-        text-decoration: none;
-        vertical-align: middle;
-      }
-      #nav a:hover, #subnav a:hover {
-        text-decoration: underline;
-      }
-      #subnav a {
-        font-size: 18px;
-      }
-
-      /* Misc */
-      .submit_button {
-        width: 100px;
-      }
+      
     </style>
 
     <!-- Base JS !-->
@@ -93,7 +55,9 @@
         return cookieValue;
       }
     </script>
-
+  {% load static %}
+  <link rel="stylesheet" type="text/css" href="{% static 'css/charts.css' %}">
+  
     <!-- Page specific headers -->
     {% block header %}
     {% endblock header %}

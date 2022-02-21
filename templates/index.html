@@ -3,9 +3,11 @@
 
 {% block header %}
 <script src = "{% static 'js/charts.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'css/charts.css' %}">
 {% endblock header %}
 
 {% block content %}
+{{ form.media }}
 <div class="box">
   <table>
     <form method="POST">
@@ -25,26 +27,58 @@
         </td>
       </tr>
     </form>
-    <tr>
-      <td>Latest humidity</td>
-      <td id="h"></td>
-    </tr>
-    <tr>
-      <td>Latest temperature</td>
-      <td id="t"></td>
-    </tr>
-    <tr>
-      <td>Latest occupancy</td>
-      <td id="o"></td>
-    </tr>
-    <tr>
-      <td>Outdoors humidity</td>
-      <td id="outside_h"></td>
-    </tr>
-    <tr>
-      <td>Outdoors temperature</td>
-      <td id="outside_t"></td>
-    </tr>
+    
+    <div class="col-md-6 col-12">
+      <div class = "card" style="margin-top:30px">
+        <div class = "card-body" >
+          <div>
+            <tr>
+              <td>Latest humidity</td>
+              <td id="h"></td>
+            </tr>
+            <tr>
+              <td>Latest temperature</td>
+              <td id="t"></td>
+            </tr>
+            <tr>
+              <td>Latest occupancy</td>
+              <td id="o"></td>
+            </tr>
+            <tr>
+              <td>Outdoors humidity</td>
+              <td id="outside_h"></td>
+            </tr>
+            <tr>
+              <td>Outdoors temperature</td>
+              <td id="outside_t"></td>
+            </tr>
+          </div>
+          <div class="container">
+              <div class='col-md-5'>
+                  <div class="form-group">
+                     <div class="input-group date" id="dateTimeFrom" data-target-input="nearest">
+                          <input type="text" class="form-control datetimepicker-input" data-target="#dateTimeFrom"/>
+                          <div class="input-group-append" data-target="#dateTimeFrom" data-toggle="datetimepicker">
+                              <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+              <div class='col-md-5'>
+                  <div class="form-group">
+                     <div class="input-group date" id="dateTimeTo" data-target-input="nearest">
+                          <input type="text" class="form-control datetimepicker-input" data-target="#dateTimeTo"/>
+                          <div class="input-group-append" data-target="#dateTimeTo" data-toggle="datetimepicker">
+                              <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+              <button onclick="MakeCharts()">Filter</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </table>
 </div>
 <div class="box">
