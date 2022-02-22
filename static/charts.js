@@ -23,7 +23,7 @@ var charts = [ undefined, undefined, undefined ];
 function MakeChart(idx, data, canvasID) {
     var ctx = document.getElementById(canvasID);
 
-    if(charts[idx] != undefined) {
+    if (charts[idx] != undefined) {
         charts[idx].destroy();
     }
 
@@ -69,22 +69,21 @@ function MakeCharts() {
             MakeChart(2, response["occupancy_data"], "ChartOccupancy");
 
             if (response["latest_hum"] != undefined) {
-                document.getElementById("h").innerHTML = response["latest_hum"].toPrecision(4);
+                document.getElementById("h").innerHTML = response["latest_hum"].toPrecision(4) + " %";
             }
             if (response["latest_temp"] != undefined) {
-                document.getElementById("t").innerHTML = response["latest_temp"].toPrecision(4);
+                document.getElementById("t").innerHTML = response["latest_temp"].toPrecision(4) + " C";
             }
             if (response["latest_occ"] != undefined) {
                 document.getElementById("o").innerHTML = response["latest_occ"];
             }
             if (response["latest_weather"] != undefined) {
-                document.getElementById("outside_h").innerHTML = response["latest_weather"].main.humidity;
-                document.getElementById("outside_t").innerHTML = response["latest_weather"].main.temp;
+                document.getElementById("outside_h").innerHTML = response["latest_weather"].main.humidity + " %";
+                document.getElementById("outside_t").innerHTML = response["latest_weather"].main.temp + " C";
             }
         },
         // The call is repeated every minute
-        complete: function(){
-            //console.log("it does things");
+        complete: function() {
             setTimeout(MakeCharts, 60000);
         }
     });
