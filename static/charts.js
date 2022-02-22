@@ -20,7 +20,7 @@ function getCookie(name) {
 
 var charts = [ undefined, undefined, undefined ];
 
-function MakeChart(idx, data, canvasID) {
+function makeChart(idx, data, canvasID) {
     var ctx = document.getElementById(canvasID);
 
     if (charts[idx] != undefined) {
@@ -57,16 +57,23 @@ function MakeChart(idx, data, canvasID) {
     });
 }
 
-function MakeCharts() {
-    // An ajax request is sent to the current url
+function updateCharts() {
+    // Get date range to request data from
+    var drp = $('input[name="datetimes"]').data('daterangepicker');
+
+    // Send AJAX request to the backend
     $.ajax({
         url: "/filter/latest/",
-        data: jQuery.param({ location: document.getElementById("location_select").value }),
+        data: jQuery.param({
+            begin: drp.startDate.format('YYYY-MM-DD HH:MM'),
+            end: drp.endDate.format('YYYY-MM-DD HH:MM'),
+            location: document.getElementById("location_select").value
+         }),
         // If it succeeds, all the charts & latest readings are created/updated
         success: function(response) {
-            MakeChart(0, response["humidity_data"], "ChartHumidity");
-            MakeChart(1, response["temperature_data"], "ChartTemperature");
-            MakeChart(2, response["occupancy_data"], "ChartOccupancy");
+            makeChart(0, response["humidity_data"], "ChartHumidity");
+            makeChart(1, response["temperature_data"], "ChartTemperature");
+            makeChart(2, response["occupancy_data"], "ChartOccupancy");
 
             if (response["latest_hum"] != undefined) {
                 document.getElementById("h").innerHTML = response["latest_hum"].toPrecision(4) + " %";
@@ -84,10 +91,25 @@ function MakeCharts() {
         },
         // The call is repeated every minute
         complete: function() {
-            setTimeout(MakeCharts, 60000);
+            setTimeout(updateCharts, 60000);
         }
     });
 };
 
-// When the page loads MakeCharts is called
-$(document).ready(MakeCharts)
+// Date range selector
+$(function() {
+    $('input[name="datetimes"]').daterangepicker({
+        timePicker: true,
+        startDate: moment().startOf('hour').subtract(24, 'hour'),
+        endDate: moment().startOf('hour'),
+        locale: {
+            format: 'YYYY-MM-DD HH:MM'
+        }
+    });
+    $('input[name="datetimes"]').on('apply.daterangepicker', function(ev, picker) {
+        updateCharts();
+    });
+});
+
+// When the page loads updateCharts is called
+$(document).ready(updateCharts)

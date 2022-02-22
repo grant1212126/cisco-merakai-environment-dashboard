@@ -3,6 +3,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
+from django.utils.timezone import make_aware
 
 from DashboardApp.models import WeatherOptions, Location, Sensor, DataPoint
 
@@ -179,14 +180,15 @@ class Graph:
         self.begin = begin
         self.end = end
 
-def get_graphs(sensors, kind, interp_kind):
+def get_graphs(sensors, begin_dt, end_dt, kind, interp_kind):
     graphs = []
     min_x = np.inf
     max_x = -np.inf
 
     for sensor in sensors:
         # Filter humidity data for the current sensor
-        humidity = DataPoint.objects.filter(kind=kind, sensor=sensor)
+        humidity = DataPoint.objects.filter(kind=kind, sensor=sensor,
+            tstamp__range=(begin_dt, end_dt))
 
         # Skip sensor if no data was collected
         if not humidity:
@@ -213,18 +215,20 @@ def get_graphs(sensors, kind, interp_kind):
             max_x = end
 
     if len(graphs) > 0:
-        return np.linspace(min_x, max_x, 200), graphs
+        return np.linspace(min_x, max_x, 100), graphs
     else:
         return None, None
 
 @login_required
 def filter_latest(request):
+    begin = make_aware(datetime.strptime(request.GET.get("begin"), "%Y-%m-%d %H:%M"))
+    end = make_aware(datetime.strptime(request.GET.get("end"), "%Y-%m-%d %H:%M"))
     location = Location.objects.get(id=request.GET.get("location"))
     sensors = Sensor.objects.filter(location=location)
 
-    hd_x, hd_graphs = get_graphs(sensors, DataPoint.Kind.HD, "linear")
-    tm_x, tm_graphs = get_graphs(sensors, DataPoint.Kind.TM, "linear")
-    oc_x, oc_graphs = get_graphs(sensors, DataPoint.Kind.OC, "nearest")
+    hd_x, hd_graphs = get_graphs(sensors, begin, end, DataPoint.Kind.HD, "linear")
+    tm_x, tm_graphs = get_graphs(sensors, begin, end, DataPoint.Kind.TM, "linear")
+    oc_x, oc_graphs = get_graphs(sensors, begin, end, DataPoint.Kind.OC, "nearest")
 
     def cleanup_samples(x, graph):
         samples = []
@@ -236,7 +240,7 @@ def filter_latest(request):
 
     if hd_x is not None:
         data["humidity_data"] = {
-            "labels": [ datetime.fromtimestamp(x).strftime("%m-%d-%Y %H:%M:%S") for x in hd_x ],
+            "labels": [ datetime.fromtimestamp(x).strftime("%Y-%m-%d %H:%M") for x in hd_x ],
             "datasets":[ {
                     "label": f"{graph.label} humidity %",
                     "data": cleanup_samples(hd_x, graph),
@@ -249,7 +253,7 @@ def filter_latest(request):
 
     if tm_x is not None:
         data["temperature_data"] = {
-            "labels": [ datetime.fromtimestamp(x).strftime("%m-%d-%Y %H:%M:%S") for x in tm_x ],
+            "labels": [ datetime.fromtimestamp(x).strftime("%Y-%m-%d %H:%M") for x in tm_x ],
             "datasets":[ {
                     "label": f"{graph.label} temperature C",
                     "data": cleanup_samples(tm_x, graph),
@@ -262,7 +266,7 @@ def filter_latest(request):
 
     if oc_x is not None:
         data["occupancy_data"] = {
-            "labels": [ datetime.fromtimestamp(x).strftime("%m-%d-%Y %H:%M:%S") for x in oc_x ],
+            "labels": [ datetime.fromtimestamp(x).strftime("%Y-%m-%d %H:%M") for x in oc_x ],
             "datasets":[ {
                     "label": f"{graph.label} occupancy",
                     "data": cleanup_samples(oc_x, graph),

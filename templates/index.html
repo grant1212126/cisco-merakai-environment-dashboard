@@ -2,12 +2,18 @@
 {% load static %}
 
 {% block header %}
+<!-- Chart update code -->
 <script src = "{% static 'charts.js' %}"></script>
+
+<!-- Datetime range picker -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="{% static '3rdparty/daterangepicker.min.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="{% static '3rdparty/daterangepicker.css' %}" />
 {% endblock header %}
 
 {% block content %}
 <div class="box">
-  <table>
+  <table id="stats">
     <form method="POST">
       {% csrf_token %}
       <tr>
@@ -44,6 +50,10 @@
     <tr>
       <td>Outdoors temperature</td>
       <td id="outside_t"></td>
+    </tr>
+    <tr>
+      <td>Display range</td>
+      <td><input readonly type="text" name="datetimes" /></td>
     </tr>
   </table>
 </div>
