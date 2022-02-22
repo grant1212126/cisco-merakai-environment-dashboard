@@ -32,6 +32,10 @@ canvas {
   width: 100% !important;
 }
 
+table#stats {
+  width: 100%;
+}
+
 /* Navigation bar(s) */
 #nav, #subnav {
   border-bottom: 1px solid white;
