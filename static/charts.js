@@ -88,6 +88,15 @@ function updateCharts() {
                 document.getElementById("outside_h").innerHTML = response["latest_weather"].main.humidity + " %";
                 document.getElementById("outside_t").innerHTML = response["latest_weather"].main.temp + " C";
             }
+            if (response["predicted_humidity"] != undefined) {
+                document.getElementById("predicted_humidity").innerHTML = response["predicted_humidity"];
+            }
+            if (response["predicted_temperature"] != undefined) {
+                document.getElementById("predicted_temperature").innerHTML = response["predicted_temperature"];
+            }
+            if (response["predicted_occupancy"] != undefined) {
+                document.getElementById("predicted_occupancy").innerHTML = response["predicted_occupancy"];
+            }
         },
         // The call is repeated every minute
         complete: function() {
