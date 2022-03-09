@@ -8,11 +8,12 @@ from django.utils.timezone import make_aware
 
 from DashboardApp.models import WeatherOptions, Location, Sensor, DataPoint
 
-# Imports from project library
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from scipy.interpolate import interp1d
 import numpy as np
+import re
+from sklearn.linear_model import LinearRegression
 
 from lib import meraki, weather
 
@@ -390,6 +391,23 @@ def filter_latest(request):
             ]
         }
 
+    def calculate_predictions(values):
+        # Alter the data such that we have an X(number of observations) * 3 array
+        # 3 being Day, Hour, and Minute
+        time = [x[1].strftime("%m-%d-%Y %H:%M:%S") for x in values]
+        time = np.array([re.split('-|:| ',a) for a in time]).astype(int)
+        time = time[:,1:5]
+        time = np.delete(time,1,1)
+
+        # Create a regression model and use it to predict the value 30 minutes from now
+        data = np.array([p[0] for p in values]).astype(int)
+        regression_model = LinearRegression()
+        regression_model.fit(time, data)
+        to_predict = (datetime.now() + timedelta(minutes=30))
+        prediction =  regression_model.predict([[int(to_predict.day), int(to_predict.hour), int(to_predict.minute)]]).round(2)
+        return prediction[0]
+
+
     # Get latest readings if present
     def val_or_none(p):
         if p is None:
@@ -402,6 +420,13 @@ def filter_latest(request):
     data["latest_hum"] = val_or_none(DataPoint.objects.filter(kind=DataPoint.Kind.HD).last())
     data["latest_temp"] = val_or_none(DataPoint.objects.filter(kind=DataPoint.Kind.TM).last())
     data["latest_occ"] = val_or_none(DataPoint.objects.filter(kind=DataPoint.Kind.OC).last())
+    data["predicted_humidity"] = calculate_predictions(DataPoint.objects.filter(
+            kind = DataPoint.Kind.HD).values_list("value", "tstamp"))
+    data["predicted_temperature"] = calculate_predictions(DataPoint.objects.filter(
+            kind = DataPoint.Kind.TM).values_list("value", "tstamp"))
+    data["predicted_occupancy"] = calculate_predictions(DataPoint.objects.filter(
+            kind = DataPoint.Kind.OC).values_list("value", "tstamp"))
+
 
     # Latest weather data
 
