@@ -1,3 +1,4 @@
+import os
 from django.forms.models import model_to_dict
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
@@ -196,10 +197,17 @@ def settings_sensors(request):
     context = {}
     selected_id = request.POST.get("select")
 
+    # Checks if Cisco API Key exists as an environment variable, if not, submits empty context
+    # dictionary. Prevents crashing if sensor settings is loaded without APIKey.
+
+    if os.getenv("MERAKI_DASHBOARD_API_KEY") == None:
+        return render(request, "settings/sensors.html", context=context)
+
     # Obtain Meraki devices from Dashboard API
     meraki_devices = request.session.get("meraki_devices") # Gets all devices 
 
     if request.POST.get("refresh") or meraki_devices == None:
+
         meraki_devices = get_meraki_devices()
         request.session["meraki_devices"] = meraki_devices
 
