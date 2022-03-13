@@ -9,18 +9,20 @@ import pickle
 import requests
 
 
-# Absolute path to city list file
+# Absolute path to city list file.
 city_list = os.path.join(os.path.dirname(__file__), "city.list.pickled")
 
-# Base URL for the OpenWeatherMap API
+# Base URL for the OpenWeatherMap API.
 base_url = "https://api.openweathermap.org/data/2.5"
 
-# Our API key is always in this environment variable
+# Our API key is always in this environment variable.
 apikey = os.getenv("OPENWEATHERMAP_API_KEY")
 
 class OpenWeatherMapError(BaseException):
     def __init__(self, status, message):
         super().__init__(f"{status}: {message}")
+
+# Returns a response from the weather API using the given city and API key.
 
 def read_city_weather(city):
     # API endpoint
@@ -34,6 +36,8 @@ def read_city_weather(city):
     # Parse response
     return resp.json()
 
+# Returns a response from the weather API using the given Latitude and Longitudinal values.
+
 def read_loc_weather(lat, lon):
     # API endpoint
     url = f"{base_url}/weather"
@@ -45,6 +49,8 @@ def read_loc_weather(lat, lon):
         raise OpenWeatherMapError(resp.status_code, resp.content)
     # Parse response
     return resp.json()
+
+# Search function, returns a single city result from the pickled databse of available cities.
 
 def search_city(name):
     with open(city_list, "rb") as file:

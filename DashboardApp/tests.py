@@ -2,9 +2,11 @@ from django.contrib.auth.forms import UserModel
 from django.test import TestCase
 from DashboardApp.models import WeatherOptions, Location, Sensor, DataPoint
 
-# Create your tests here.
+# Tests the applications models on vaiours aspects
 
 class ModelTests(TestCase):
+
+    # Creates temporary databse entries to test against in unit tests
 
     def setUp(self):
 
@@ -22,13 +24,15 @@ class ModelTests(TestCase):
 
         DataPoint.objects.create(kind = "Occupancy", location = Location.objects.get(name="Glasgow"), sensor = Sensor.objects.get(org_id=1, serial=1), value = 5)
 
-
+    # Tests if each locatiion object has a name (name is the unique idendifier)
 
     def test_Location(self):
 
         for l in Location.objects.all():
             
             self.assertTrue(l.name != None, "Error, Location instance exists with no name, please check location: " + str(l.id))
+
+    # Tests the all the sensor objects to make sure each constraint is satisfied 
 
     def test_Sensor(self):
 
@@ -44,6 +48,8 @@ class ModelTests(TestCase):
 
             self.assertTrue(s.kind in Sensor.Kind, "Error, Sensor instance exists with incorrect kind not in Sensor.Kind list, please check Sensor: " + str(s.org_id) + str(s.serial))
 
+    # Tests all the DataPoint objects to make sure each constraint is satisfied
+
     def test_DataPoint(self):
 
         for d in DataPoint.objects.all():
@@ -58,10 +64,18 @@ class ModelTests(TestCase):
 
             self.assertTrue(d.value != None, "Error, DataPoint instance exists with no value, please check DataPoint: " + str(d.id))
 
+# Tests the applications views on various aspects
+
 class ViewTests(TestCase):
+
+    # Sets up a user to be used for testing purposes in the views.
+
     def setUp(self):
 
         user = UserModel.objects.create(username='testuser', password='12345')
+
+    # Tests if the authentication for the Aplications is functional, tests if application returns
+    # the correct responses.
 
     def test_authentication(self):
 
@@ -72,6 +86,8 @@ class ViewTests(TestCase):
 
         response = self.client.get('/') 
         self.assertEqual(response.status_code, 200, "Error, logged in user still cannot access dashboard")
+
+    # Tests if the applications redirect to the correct locations, e.g. return the correct response 
 
     def test_view_urls_at_correct_area(self):
 
