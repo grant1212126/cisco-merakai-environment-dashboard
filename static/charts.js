@@ -18,8 +18,9 @@ function getCookie(name) {
     return cookieValue;
 }
 
+// Used to create 3 ChartJS charts based on passed parameters
+// One undefined var is made per chart as the chart must be destroyed to be redrawn and thus has to be bound to a variable
 var charts = [ undefined, undefined, undefined ];
-
 function makeChart(idx, data, canvasID) {
     var ctx = document.getElementById(canvasID);
 
